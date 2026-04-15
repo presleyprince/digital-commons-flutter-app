@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "721888306104",
+    "project_id": "digital-shores-app",
+    "storage_bucket": "digital-shores-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:721888306104:android:9a9635501f91599781e54d",
+        "android_client_info": {
+          "package_name": "com.shores.digital"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBDMIDLMx4MbDp7aapFkyA0UF1Bz97HH9o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
