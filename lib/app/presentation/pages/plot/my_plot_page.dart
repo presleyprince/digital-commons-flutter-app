@@ -4,6 +4,7 @@ import 'package:digital_shores/core/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:go_router/go_router.dart';
 
 class MyPlotPage extends StatefulWidget {
   const MyPlotPage({super.key});
@@ -75,7 +76,14 @@ class _MyPlotPageState extends State<MyPlotPage> {
         actions: [
           IconButton(
             onPressed: _controller.reload,
-            icon: Icon(Icons.replay_rounded),
+            icon: const Icon(Icons.replay_rounded),
+            color: color.primary,
+          ),
+          IconButton(
+            onPressed: () {
+              context.go('/home/gps-test');
+            },
+            icon: const Icon(Icons.gps_fixed),
             color: color.primary,
           ),
         ],

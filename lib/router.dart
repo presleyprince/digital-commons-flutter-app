@@ -22,6 +22,7 @@ import 'package:digital_shores/app/presentation/pages/sea_discussion/sea_discuss
 import 'package:digital_shores/app/presentation/pages/weather_page.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:digital_shores/app/presentation/pages/plot/gps_record_page.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _sectionNavigatorKey = GlobalKey<NavigatorState>();
@@ -117,6 +118,10 @@ final router = GoRouter(
                   builder: (context, state) {
                     return const MyPlotPage();
                   },
+                ),
+                GoRoute(
+                  path: 'gps-test',
+                  builder: (context, state) => const GpsRecordPage(),
                 ),
                 GoRoute(
                   path: 'my-finance',
