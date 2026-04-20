@@ -32,8 +32,11 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  await dotenv.load(fileName: "assets/.env");
-
+  try {
+    await dotenv.load(fileName: "assets/env", mergeWith: {});
+  } catch (e) {
+    // no .env file, continue anyway even if .env was missing
+  }
   await initializeDateFormatting('id_ID', null).then((_) => runApp(const App()));
 }
 

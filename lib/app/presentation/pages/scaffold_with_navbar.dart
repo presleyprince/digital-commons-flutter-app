@@ -11,13 +11,26 @@ class ScaffoldWithNavBar extends StatelessWidget {
     required this.navigationShell,
   });
 
+// changed to tell the app which page to naviagte to when each navbar is clicked through paths defined in router.dart
   void _onItemTapped(int index, BuildContext context) {
-    navigationShell.goBranch(
-      index,
-      initialLocation: true,
-    );
+  switch (index) {
+    case 0:
+      context.go('/home');
+      break;
+    case 1:
+      context.go('/my-plot');
+      break;
+    case 2:
+      context.go('/my-finance');
+      break;
+    case 3:
+      context.go('/information');
+      break;
+    case 4:
+      context.go('/profile');
+      break;
   }
-
+}
   @override
   Widget build(BuildContext context) {
     final color = Theme.of(context).colorScheme;
@@ -103,6 +116,86 @@ class ScaffoldWithNavBar extends StatelessWidget {
                       ),
                     ),
                     label: 'Beranda',
+                  ),
+                 // added feature for 5 nav bar
+                  BottomNavigationBarItem(
+                    backgroundColor: color.primary,
+                    icon: Padding(
+                      padding: const EdgeInsets.only(left: 12, right: 12),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: navigationShell.currentIndex == 1 ? inActiveColor : activeColor,
+                          borderRadius: BorderRadius.circular(kDefaultRadius),
+                        ),
+                        width: double.infinity,
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Column(
+                          children: [
+                            Image(
+                              image: const AssetImage(R.ASSETS_ICONS_MY_PLOT_PNG),
+                              color: navigationShell.currentIndex == 1 ? activeColor : inActiveColor,
+                              width: 32,
+                            ),
+                            Text('LahanKu', style: TextStyle(fontSize: 16, fontWeight: kFontweightSemiBold,
+                              color: navigationShell.currentIndex == 1 ? activeColor : inActiveColor)),
+                          ],
+                        ),
+                      ),
+                    ),
+                    label: 'LahanKu',
+                    // added item to the nav bar
+                  ),
+                  BottomNavigationBarItem(
+                    backgroundColor: color.primary,
+                    icon: Padding(
+                      padding: const EdgeInsets.only(left: 12, right: 12),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: navigationShell.currentIndex == 2 ? inActiveColor : activeColor,
+                          borderRadius: BorderRadius.circular(kDefaultRadius),
+                        ),
+                        width: double.infinity,
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Column(
+                          children: [
+                            Image(
+                              image: const AssetImage(R.ASSETS_ICONS_MY_FINANCIAL_PNG),
+                              color: navigationShell.currentIndex == 2 ? activeColor : inActiveColor,
+                              width: 32,
+                            ),
+                            Text('KeuanganKu', style: TextStyle(fontSize: 16, fontWeight: kFontweightSemiBold,
+                              color: navigationShell.currentIndex == 2 ? activeColor : inActiveColor)),
+                          ],
+                        ),
+                      ),
+                    ),
+                    label: 'KeuanganKu',
+                  ),
+                  BottomNavigationBarItem( // added feature to nav bar
+                    backgroundColor: color.primary,
+                    icon: Padding(
+                      padding: const EdgeInsets.only(left: 12, right: 12),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: navigationShell.currentIndex == 3 ? inActiveColor : activeColor,
+                          borderRadius: BorderRadius.circular(kDefaultRadius),
+                        ),
+                        width: double.infinity,
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Column(
+                          children: [
+                            Image(
+                              image: const AssetImage(R.ASSETS_ICONS_INFORMATION_PNG),
+                              color: navigationShell.currentIndex == 3 ? activeColor : inActiveColor,
+                              width: 32,
+                            ),
+                            Text('Informasi', style: TextStyle(fontSize: 16, fontWeight: kFontweightSemiBold,
+                              color: navigationShell.currentIndex == 3 ? activeColor : inActiveColor)),
+                          ],
+                        ),
+                      ),
+                    ),
+                    label: 'Informasi',
                   ),
                   BottomNavigationBarItem(
                     backgroundColor: color.primary,
