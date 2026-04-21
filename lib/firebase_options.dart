@@ -44,25 +44,25 @@ class DefaultFirebaseOptions {
     apiKey: 'AIzaSyAyTahlZNB7nRIMpTMb3KxNWPLb4tGQFFw',
     appId: '1:721888306104:web:98da2bdf0506efa681e54d',
     messagingSenderId: '721888306104',
-    projectId: 'digital-shores-app',
+    projectId: 'digital-commons-p46',
     authDomain: 'digital-shores-app.firebaseapp.com',
     storageBucket: 'digital-shores-app.firebasestorage.app',
     measurementId: 'G-E7TJVRSMVK',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyBDMIDLMx4MbDp7aapFkyA0UF1Bz97HH9o',
-    appId: '1:721888306104:android:9a9635501f91599781e54d',
-    messagingSenderId: '721888306104',
-    projectId: 'digital-shores-app',
-    storageBucket: 'digital-shores-app.firebasestorage.app',
+    apiKey: 'AIzaSyCpC8I2-e44JBsVnvC9hUEDh61GnZ0ROiM',
+    appId: '1:449082779561:android:7f22b81208e89ffa5286b8',
+    messagingSenderId: '449082779561',
+    projectId: 'digital-commons-p46',
+    storageBucket: 'digital-commons-p46.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyB47XiKZ4fBrgNV8pc2Cy9SQ9uGkseY3l8',
     appId: '1:721888306104:ios:ec3f431d3a3c4a0581e54d',
     messagingSenderId: '721888306104',
-    projectId: 'digital-shores-app',
+    projectId: 'digital-commons-p46',
     storageBucket: 'digital-shores-app.firebasestorage.app',
     iosBundleId: 'com.example.digitalShores',
   );
@@ -71,7 +71,7 @@ class DefaultFirebaseOptions {
     apiKey: 'AIzaSyB47XiKZ4fBrgNV8pc2Cy9SQ9uGkseY3l8',
     appId: '1:721888306104:ios:ec3f431d3a3c4a0581e54d',
     messagingSenderId: '721888306104',
-    projectId: 'digital-shores-app',
+    projectId: 'digital-commons-p46',
     storageBucket: 'digital-shores-app.firebasestorage.app',
     iosBundleId: 'com.example.digitalShores',
   );
@@ -80,7 +80,7 @@ class DefaultFirebaseOptions {
     apiKey: 'AIzaSyAyTahlZNB7nRIMpTMb3KxNWPLb4tGQFFw',
     appId: '1:721888306104:web:ce9efa3bed0bcbe281e54d',
     messagingSenderId: '721888306104',
-    projectId: 'digital-shores-app',
+    projectId: 'digital-commons-p46',
     authDomain: 'digital-shores-app.firebaseapp.com',
     storageBucket: 'digital-shores-app.firebasestorage.app',
     measurementId: 'G-JEMRD7JTTM',
