@@ -18,7 +18,6 @@ import 'package:digital_shores/app/presentation/pages/profile/delete_account_pag
 import 'package:digital_shores/app/presentation/pages/profile/edit_profile_page.dart';
 import 'package:digital_shores/app/presentation/pages/profile/profile_page.dart';
 import 'package:digital_shores/app/presentation/pages/scaffold_with_navbar.dart';
-import 'package:digital_shores/app/presentation/pages/sea_discussion/sea_discussion_page.dart';
 import 'package:digital_shores/app/presentation/pages/weather_page.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -109,12 +108,7 @@ final router = GoRouter(
                     return const AddInformationPage();
                   },
                 ),
-                GoRoute(
-                  path: 'sea-discussion',
-                  builder: (context, state) {
-                    return const SeaDiscussionPage();
-                  },
-                ),
+                  //removed sea disucssion page route
                 GoRoute(
                   path: 'my-plot',
                   builder: (context, state) {

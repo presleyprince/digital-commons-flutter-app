@@ -41,11 +41,7 @@ final List<HomeMenu> kHomeMenu = [
     title: 'DokumenKu',
     route: 'administration',
   ),
-  HomeMenu(
-    image: R.ASSETS_ICONS_SEA_DISCUSSION_PNG,
-    title: 'Bincang Laut',
-    route: 'sea-discussion',
-  ),
+// removed Bincang Laut, becoming merged to Informasi
   HomeMenu(
     image: R.ASSETS_ICONS_INFORMATION_PNG,
     title: 'Informasi',
@@ -61,11 +57,7 @@ final List<HomeMenu> kHomeMenu = [
     title: 'KeuanganKu',
     route: 'my-finance',
   ),
-  HomeMenu(
-    image: R.ASSETS_ICONS_WEATHER_PNG,
-    title: 'Cuaca',
-    route: 'weather',
-  ),
+  // removed Cuaca, now a widget
 ];
 
 const kOccupation = [

@@ -15,7 +15,7 @@ class HomeDigitalShoresMenu extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: kHomeMenu
-              .take(3)
+              .take(2) // changed to 2, display 2 top
               .map(
                 (menu) => HomeMenuTile(menu: menu),
               )
@@ -25,7 +25,7 @@ class HomeDigitalShoresMenu extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: kHomeMenu
-              .sublist(3)
+              .sublist(2) // changed to 2, after merge and 4 features display
               .map(
                 (menu) => HomeMenuTile(menu: menu),
               )

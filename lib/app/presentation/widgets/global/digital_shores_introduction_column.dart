@@ -22,40 +22,55 @@ class DigitalShoresIntroductionColumn extends StatelessWidget {
                   children: [
                     Image.asset(
                       R.ASSETS_IMAGES_APP_LOGO_PNG,
-                      height: 64,
+                      height: 40, // reduced to make more compact
                     ),
-                    const SizedBox(width: 10),
-                    Text('Hai Sobat Laut!', style: kTitle5TextStyle),
+                    const SizedBox(width: 8), // lowered the gap
+                    Text('Hai Sobat Laut!', style: kTitle6TextStyle),
                   ],
                 ),
               )
             : SizedBox(),
-        Container(
-          width: double.infinity,
-          height: 250,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(kDefaultRadius),
-            image: DecorationImage(
-              image: AssetImage(
-                R.ASSETS_IMAGES_BEACH_PNG,
+
+        // removed large beach image and line below it
+
+        // added new weather card
+        Container (
+          width: double.infinity, // create a box that will stretch the full width of the screen
+          padding: EdgeInsets.all(16), //  add space inside the box
+
+          decoration: BoxDecoration ( //styling the box
+            color: Color(0xFF1A73E8), // set to blue
+            borderRadius: BorderRadius.circular(kDefaultRadius), // rounded corners for box
+          ),
+          child: Column( // stack everything vertically in the box
+            crossAxisAlignment: CrossAxisAlignment.start, // line everything to the left
+            children: [
+              Text(
+                'Cuaca Hari Ini', // 'Today's Weather' at the top
+                style: kTitle5TextStyle.copyWith(color: Colors.white), // white text, kTitle5TextStyle is defined as a constant in constants.dart
+               ),
+              const SizedBox(height: 8), // the sun icon and temeprature can be next to each other
+              Row(
+                children: [ // list of things to diplay
+                  Icon(Icons.wb_sunny, color:Colors.white, size:40), // sun icon from Flutter's library
+                  const SizedBox(width: 12), // creating gap between the icon and text
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start, // start aligns everything to the left
+                    children: [
+                      Text( // temperature number need to change from text to automatic detection
+                        '28C',
+                        style: kTitle5TextStyle.copyWith(color: Colors.white),
+                      ),
+                      Text( // description after temperature, text faded
+                        'Cerah, Cocok untuk melaut', // 'Clear, Good for Fishing'
+                        style: kSubtitle5TextStyle.copyWith(color: Colors.white70), // used 70 for 70% opactiy
+                      ),
+                    ],
+                  ),
+                ],
               ),
-              fit: BoxFit.fitHeight,
-            ),
+            ],
           ),
-        ),
-        const SizedBox(height: 12),
-        Text(
-          kAppName,
-          textAlign: TextAlign.center,
-          style: kTitle5TextStyle.copyWith(
-            color: titleBlue ? color.primary : null,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          'Terhubung dengan dunia, berlabuh di $kAppName.',
-          style: kSubtitle5TextStyle,
-          textAlign: TextAlign.center,
         ),
         const SizedBox(height: 16),
       ],
