@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "721888306104",
-    "project_id": "digital-shores-app",
-    "storage_bucket": "digital-shores-app.firebasestorage.app"
+    "project_number": "449082779561",
+    "project_id": "digital-commons-p46",
+    "storage_bucket": "digital-commons-p46.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:721888306104:android:9a9635501f91599781e54d",
+        "mobilesdk_app_id": "1:449082779561:android:7f22b81208e89ffa5286b8",
         "android_client_info": {
           "package_name": "com.shores.digital"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyBDMIDLMx4MbDp7aapFkyA0UF1Bz97HH9o"
+          "current_key": "AIzaSyCpC8I2-e44JBsVnvC9hUEDh61GnZ0ROiM"
         }
       ],
       "services": {
