@@ -17,7 +17,7 @@ class SeaDiscussionPage extends StatelessWidget {
       CustomSnackbar.alert(context, 'Gagal membuka WhatsApp');
     }
   }
-
+ 
   @override
   Widget build(BuildContext context) {
     final color = Theme.of(context).colorScheme;
