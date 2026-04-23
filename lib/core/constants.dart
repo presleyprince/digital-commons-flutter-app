@@ -57,6 +57,11 @@ final List<HomeMenu> kHomeMenu = [
     title: 'KeuanganKu',
     route: 'my-finance',
   ),
+  HomeMenu(
+    image: R.ASSETS_ICONS_HISTORY_PNG, // need to update icon
+    title: 'Menu Baru',
+    route: 'my-new-page',
+  ),
   // removed Cuaca, now a widget
 ];
 

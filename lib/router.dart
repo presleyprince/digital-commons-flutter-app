@@ -22,6 +22,7 @@ import 'package:digital_shores/app/presentation/pages/weather_page.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:digital_shores/app/presentation/pages/plot/gps_record_page.dart';
+import 'package:digital_shores/app/presentation/pages/seaweed_farmer_home.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _sectionNavigatorKey = GlobalKey<NavigatorState>();
@@ -94,6 +95,7 @@ final router = GoRouter(
                   builder: (context, state) {
                     return const InformationPage();
                   },
+                  
                   routes: [
                     GoRoute(
                       path: 'detail',
@@ -126,6 +128,10 @@ final router = GoRouter(
                     return MyFinancePage();
                   },
                 ),
+                GoRoute(
+                      path: 'my-new-page',
+                      builder: (context, state) => const SeaweedFarmerHome(),
+                    ),
                 GoRoute(
                   path: 'weather',
                   builder: (context, state) {
