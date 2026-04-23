@@ -77,4 +77,7 @@ class R {
   /// ![preview](file:///Users/mfshobur/Documents/flutter/digital_shores/assets/images/onboarding_2.JPG)
   static const String ASSETS_IMAGES_ONBOARDING_2_JPG =
       'assets/images/onboarding_2.JPG';
+
+  static const String ASSETS_ICONS_SEAWEED_HOME_PNG =
+    'assets/icons/seaweed_home.png';
 }

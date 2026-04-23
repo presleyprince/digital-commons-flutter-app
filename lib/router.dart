@@ -129,7 +129,7 @@ final router = GoRouter(
                   },
                 ),
                 GoRoute(
-                      path: 'my-new-page',
+                      path: 'seaweed-home',
                       builder: (context, state) => const SeaweedFarmerHome(),
                     ),
                 GoRoute(

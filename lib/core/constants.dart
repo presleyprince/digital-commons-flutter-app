@@ -58,9 +58,9 @@ final List<HomeMenu> kHomeMenu = [
     route: 'my-finance',
   ),
   HomeMenu(
-    image: R.ASSETS_ICONS_HISTORY_PNG, // need to update icon
-    title: 'Menu Baru',
-    route: 'my-new-page',
+    image: R.ASSETS_ICONS_SEAWEED_HOME_PNG, // need to update icon
+    title: 'Seaweed page', //change to Indonesian
+    route: 'seaweed-home',
   ),
   // removed Cuaca, now a widget
 ];

@@ -8,7 +8,7 @@ class SeaweedFarmerHome extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Menu Baru'),
+        title: const Text('Seaweed Farming Home Page'),
       ),
       body: SafeArea(
         child: Padding(
