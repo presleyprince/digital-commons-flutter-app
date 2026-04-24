@@ -159,6 +159,44 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
     return distanceInMeters < 3;
   }
 
+  double _calculatePolygonAreaSquareMeters() {
+    if (_recordedPoints.length < 4) {
+      return 0;
+    }
+
+    final averageLatitude = _recordedPoints
+            .map((point) => point.latitude)
+            .reduce((a, b) => a + b) /
+        _recordedPoints.length;
+
+    const earthRadius = 6378137.0;
+
+    final projectedPoints = _recordedPoints.map((point) {
+      final x = earthRadius *
+          _degreesToRadians(point.longitude) *
+          math.cos(_degreesToRadians(averageLatitude));
+
+      final y = earthRadius * _degreesToRadians(point.latitude);
+
+      return Offset(x, y);
+    }).toList();
+
+    double area = 0;
+
+    for (int i = 0; i < projectedPoints.length; i++) {
+      final nextIndex = (i + 1) % projectedPoints.length;
+
+      area += projectedPoints[i].dx * projectedPoints[nextIndex].dy;
+      area -= projectedPoints[nextIndex].dx * projectedPoints[i].dy;
+    }
+
+    return area.abs() / 2;
+  }
+
+  double _degreesToRadians(double degrees) {
+    return degrees * math.pi / 180.0;
+  }
+
   @override
   Widget build(BuildContext context) {
     final latText = _currentPosition == null
@@ -172,6 +210,8 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
     final accuracyText = _currentPosition == null
         ? '--'
         : '${_currentPosition!.accuracy.toStringAsFixed(2)} m';
+
+    final areaSquareMeters = _calculatePolygonAreaSquareMeters();
 
     return Scaffold(
       appBar: AppBar(
@@ -211,6 +251,12 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
                           ? 'Preview mode: points and polyline'
                           : 'Preview mode: polygon',
                     ),
+                    const SizedBox(height: 8),
+                      Text(
+                        _recordedPoints.length < 4
+                            ? 'Area: Not available yet'
+                            : 'Area: ${areaSquareMeters.toStringAsFixed(2)} m²',
+                        ),
                   ],
                 ),
               ),
