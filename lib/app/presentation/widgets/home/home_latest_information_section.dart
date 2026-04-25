@@ -79,6 +79,7 @@ class _HomeLatestInformationSectionState extends State<HomeLatestInformationSect
                     );
                   },
                   separatorBuilder: (context, index) => SizedBox(width: 10), // gap between cards
+                );
               },
             ),
           ),
