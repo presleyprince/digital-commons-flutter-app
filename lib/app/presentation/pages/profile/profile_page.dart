@@ -35,6 +35,42 @@ class _ProfilePageState extends State<ProfilePage> {
     super.dispose();
   }
 
+  Widget _buildAvatar(String? fullName) {
+    final initials = (fullName ?? '') // use empty string if no name
+    .trim() // remove extra spaces
+    .split(' ') // split into words
+    .where((e) => e.isNotEmpty) // removing empty words
+    .map((e) => e[0].toUpperCase()) // take the first letter of each word
+    .take(2) // max 2 intitals
+    .join(); // combining to one string e.g "BS"
+
+    return Center(
+      child: Column(
+        children: [
+          CircleAvatar(
+            radius: 36,
+            backgroundColor: Colors.blue.shade100,
+            child: Text(
+              initials.isEmpty ? '?' : initials, // show question mark ? if no name
+              style: const TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w500,
+                color: Colors.blue,
+              ),
+            ),
+          ),
+          const SizedBox(height: 8), // gap between circle and name
+          Text(
+            fullName ?? '',
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
   @override
   Widget build(BuildContext context) {
     return Consumer<AuthNotifier>(builder: (context, value, child) {
@@ -62,19 +98,43 @@ class _ProfilePageState extends State<ProfilePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    _buildAvatar(notifier.userData?.fullName), // adding initials as profile pic, reaches into AuthNotifer to get the current log in details, ? takes it if it exists only
+                    const SizedBox(height: 16),
                     ProfileInformationBox(notifier: notifier),
                     const SizedBox(height: 24),
+
+                    // adding Settings section to seperate delete account and login
+                    Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Theme.of(context).colorScheme.primary),
+                        borderRadius: BorderRadius.circular(kDefaultRadius),
+                      ),
+                      child: Column(
+                        children: [
+                          ListTile(
+                            title: const Text('Bahasa'), // lanaguge button for future
+                            trailing: const Icon(Icons.chevron_right), // arrow on the right side of the rows
+                            onTap: () => router.go('/profile/language'),
+                          ),
+                          Divider(height: 1, color: Theme.of(context).colorScheme.primary.withOpacity(0.3)),
+                          ListTile(
+                            title: Text(
+                              'Hapus Akun', // delete account button
+                              style: TextStyle(color: Theme.of(context).colorScheme.error), // use error. to make it red so it stands out
+                            ),
+                            trailing: Icon(Icons.chevron_right, color: Theme.of(context).colorScheme.error),
+                            onTap: () => router.go('/profile/delete'),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // keeping logout away from the rest 
                     PrimaryElevatedButton(
                       text: 'Keluar Akun',
                       image: R.ASSETS_ICONS_LOGOUT_PNG,
                       onPressed: () => notifier.logout(),
-                    ),
-                    const SizedBox(height: 24),
-                    PrimaryElevatedButton(
-                      text: 'Hapus Akun',
-                      image: R.ASSETS_ICONS_DELETE_PNG,
-                      red: true,
-                      onPressed: () => router.go('/profile/delete'),
                     ),
                     const SizedBox(height: 24),
                   ],
