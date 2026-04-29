@@ -1,20 +1,13 @@
-import 'dart:math' as math;
+import 'package:digital_shores/app/presentation/pages/plot/models/plot_point.dart';
+import 'package:digital_shores/app/presentation/pages/plot/models/saved_plot.dart';
+import 'package:digital_shores/app/presentation/pages/plot/painters/plot_preview_painter.dart';
+import 'package:digital_shores/app/presentation/pages/plot/storage/plot_local_storage.dart';
+import 'package:digital_shores/app/presentation/pages/plot/utils/plot_geometry.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-
-class RecordedPoint {
-  final double latitude;
-  final double longitude;
-  final double accuracy;
-  final DateTime timestamp;
-
-  const RecordedPoint({
-    required this.latitude,
-    required this.longitude,
-    required this.accuracy,
-    required this.timestamp,
-  });
-}
+import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
+import 'package:uuid/uuid.dart';
 
 class GpsRecordPage extends StatefulWidget {
   const GpsRecordPage({super.key});
@@ -24,20 +17,31 @@ class GpsRecordPage extends StatefulWidget {
 }
 
 class _GpsRecordPageState extends State<GpsRecordPage> {
+  final PlotLocalStorage _plotLocalStorage = PlotLocalStorage();
+  final Uuid _uuid = const Uuid();
+
   bool _isLoading = false;
+  bool _isSaving = false;
   String _statusText = 'No location fetched yet';
   Position? _currentPosition;
-
-  final List<RecordedPoint> _recordedPoints = [];
+  final List<PlotPoint> _recordedPoints = [];
 
   Future<void> _getCurrentLocation() async {
+    if (_recordedPoints.length >= PlotGeometry.requiredPointCount) {
+      await _showAlertDialog(
+        title: 'Plot already complete',
+        message: 'This plot already has 4 points. Save it or clear points before getting another location.',
+      );
+      return;
+    }
+
     setState(() {
       _isLoading = true;
       _statusText = 'Checking location service...';
     });
 
     try {
-      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
         setState(() {
           _isLoading = false;
@@ -46,8 +50,7 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
         return;
       }
 
-      LocationPermission permission = await Geolocator.checkPermission();
-
+      var permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
       }
@@ -64,7 +67,7 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
         setState(() {
           _isLoading = false;
           _statusText =
-          'Location permission permanently denied. Enable it in system settings';
+              'Location permission permanently denied. Enable it in system settings';
         });
         return;
       }
@@ -102,24 +105,36 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
       return;
     }
 
-    if (_isTooCloseToLastRecordedPoint(_currentPosition!)) {
+    if (_recordedPoints.length >= PlotGeometry.requiredPointCount) {
+      _showAlertDialog(
+        title: 'Maximum points reached',
+        message: 'Quadrilateral plots must contain exactly 4 points.',
+      );
+      return;
+    }
+
+    if (PlotGeometry.isTooCloseToLastRecordedPoint(
+      points: _recordedPoints,
+      currentPosition: _currentPosition!,
+    )) {
       setState(() {
-        _statusText =
-            'Current location is too close to the last recorded point';
+        _statusText = 'Current location is too close to the last recorded point';
       });
       return;
     }
 
-    final point = RecordedPoint(
+    final point = PlotPoint(
       latitude: _currentPosition!.latitude,
       longitude: _currentPosition!.longitude,
       accuracy: _currentPosition!.accuracy,
-      timestamp: DateTime.now(),
+      recordedAt: DateTime.now(),
     );
 
     setState(() {
       _recordedPoints.add(point);
-      _statusText = 'Point ${_recordedPoints.length} recorded';
+      _statusText = _recordedPoints.length == PlotGeometry.requiredPointCount
+          ? 'Point 4 recorded. Plot is ready to save'
+          : 'Point ${_recordedPoints.length} recorded';
     });
   }
 
@@ -144,57 +159,132 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
     });
   }
 
-  bool _isTooCloseToLastRecordedPoint(Position currentPosition) {
-    if (_recordedPoints.isEmpty) return false;
+  Future<void> _savePlot() async {
+    if (_recordedPoints.length != PlotGeometry.requiredPointCount) {
+      await _showAlertDialog(
+        title: 'Unable to save plot',
+        message: 'Only quadrilateral plots with exactly 4 points can be saved.',
+      );
+      return;
+    }
 
-    final lastPoint = _recordedPoints.last;
+    final customName = await _promptPlotName();
+    if (!mounted || customName == null) return;
 
-    final distanceInMeters = Geolocator.distanceBetween(
-      lastPoint.latitude,
-      lastPoint.longitude,
-      currentPosition.latitude,
-      currentPosition.longitude,
+    final now = DateTime.now();
+    final timestamp = DateFormat('yyyy-MM-dd HH:mm').format(now);
+    final trimmedName = customName.trim();
+    final plotName =
+        trimmedName.isEmpty ? 'Plot $timestamp' : '$trimmedName - $timestamp';
+
+    final plot = SavedPlot(
+      id: _uuid.v4(),
+      name: plotName,
+      points: List<PlotPoint>.from(_recordedPoints),
+      areaSquareMeters: PlotGeometry.calculatePolygonAreaSquareMeters(
+        _recordedPoints,
+      ),
+      createdAt: now,
+      updatedAt: now,
+      isSynced: false,
+      source: 'offline_gps',
     );
 
-    return distanceInMeters < 3;
+    setState(() {
+      _isSaving = true;
+    });
+
+    try {
+      await _plotLocalStorage.savePlot(plot);
+      if (!mounted) return;
+
+      setState(() {
+        _isSaving = false;
+        _recordedPoints.clear();
+        _statusText = '${plot.name} saved successfully';
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${plot.name} saved')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isSaving = false;
+        _statusText = 'Failed to save plot: $e';
+      });
+      await _showAlertDialog(
+        title: 'Failed to save plot',
+        message: 'An error occurred while saving this plot.\n\n$e',
+      );
+    }
   }
 
-  double _calculatePolygonAreaSquareMeters() {
-    if (_recordedPoints.length < 4) {
-      return 0;
-    }
+  Future<String?> _promptPlotName() async {
+    final controller = TextEditingController();
 
-    final averageLatitude = _recordedPoints
-            .map((point) => point.latitude)
-            .reduce((a, b) => a + b) /
-        _recordedPoints.length;
+    final result = await showDialog<String>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Save Plot'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Enter a plot name or skip to use an automatic name.'),
+              const SizedBox(height: 12),
+              TextField(
+                controller: controller,
+                decoration: const InputDecoration(
+                  labelText: 'Plot name',
+                  hintText: 'Optional',
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(null),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(''),
+              child: const Text('Skip'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(controller.text),
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
 
-    const earthRadius = 6378137.0;
-
-    final projectedPoints = _recordedPoints.map((point) {
-      final x = earthRadius *
-          _degreesToRadians(point.longitude) *
-          math.cos(_degreesToRadians(averageLatitude));
-
-      final y = earthRadius * _degreesToRadians(point.latitude);
-
-      return Offset(x, y);
-    }).toList();
-
-    double area = 0;
-
-    for (int i = 0; i < projectedPoints.length; i++) {
-      final nextIndex = (i + 1) % projectedPoints.length;
-
-      area += projectedPoints[i].dx * projectedPoints[nextIndex].dy;
-      area -= projectedPoints[nextIndex].dx * projectedPoints[i].dy;
-    }
-
-    return area.abs() / 2;
+    return result;
   }
 
-  double _degreesToRadians(double degrees) {
-    return degrees * math.pi / 180.0;
+  Future<void> _showAlertDialog({
+    required String title,
+    required String message,
+  }) async {
+    if (!mounted) return;
+
+    await showDialog<void>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(message),
+          actions: [
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -202,19 +292,26 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
     final latText = _currentPosition == null
         ? '--'
         : _currentPosition!.latitude.toStringAsFixed(6);
-
     final lngText = _currentPosition == null
         ? '--'
         : _currentPosition!.longitude.toStringAsFixed(6);
-
     final accuracyText = _currentPosition == null
         ? '--'
         : '${_currentPosition!.accuracy.toStringAsFixed(2)} m';
-
-    final areaSquareMeters = _calculatePolygonAreaSquareMeters();
+    final areaSquareMeters =
+        PlotGeometry.calculatePolygonAreaSquareMeters(_recordedPoints);
 
     return Scaffold(
       appBar: AppBar(
+        leading: BackButton(
+          onPressed: () {
+            if (Navigator.of(context).canPop()) {
+              Navigator.of(context).pop();
+              return;
+            }
+            context.go('/home/seaweed-home');
+          },
+        ),
         title: const Text('GPS Plot Recorder'),
       ),
       body: SingleChildScrollView(
@@ -244,19 +341,19 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
                     const SizedBox(height: 8),
                     Text('Accuracy: $accuracyText'),
                     const SizedBox(height: 12),
-                    Text('Recorded Points: ${_recordedPoints.length}'),
+                    Text('Recorded Points: ${_recordedPoints.length}/4'),
                     const SizedBox(height: 8),
                     Text(
-                      _recordedPoints.length < 4
+                      _recordedPoints.length < PlotGeometry.requiredPointCount
                           ? 'Preview mode: points and polyline'
                           : 'Preview mode: polygon',
                     ),
                     const SizedBox(height: 8),
-                      Text(
-                        _recordedPoints.length < 4
-                            ? 'Area: Not available yet'
-                            : 'Area: ${areaSquareMeters.toStringAsFixed(2)} m²',
-                        ),
+                    Text(
+                      _recordedPoints.length < PlotGeometry.requiredPointCount
+                          ? 'Area: Not available yet'
+                          : 'Area: ${areaSquareMeters.toStringAsFixed(2)} m^2',
+                    ),
                   ],
                 ),
               ),
@@ -275,6 +372,11 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
                   onPressed: _recordCurrentPoint,
                   icon: const Icon(Icons.add_location_alt),
                   label: const Text('Record Point'),
+                ),
+                ElevatedButton.icon(
+                  onPressed: _isSaving ? null : _savePlot,
+                  icon: const Icon(Icons.save_alt),
+                  label: Text(_isSaving ? 'Saving...' : 'Save Plot'),
                 ),
                 OutlinedButton.icon(
                   onPressed: _undoLastPoint,
@@ -306,24 +408,25 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
                   color: Colors.grey.shade50,
                 ),
                 child: _recordedPoints.isEmpty
-                    ? const Center(
-                  child: Text('No preview yet'),
-                )
+                    ? const Center(child: Text('No preview yet'))
                     : ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: InteractiveViewer(
-                    minScale: 0.5,
-                    maxScale: 8.0,
-                    boundaryMargin: const EdgeInsets.all(80),
-                    child: CustomPaint(
-                      size: const Size(320, 320),
-                      painter: PlotPreviewPainter(
-                        points: _recordedPoints,
-                        currentPosition: _currentPosition,
+                        borderRadius: BorderRadius.circular(12),
+                        child: InteractiveViewer(
+                          minScale: 0.5,
+                          maxScale: 8.0,
+                          boundaryMargin: const EdgeInsets.all(80),
+                          child: CustomPaint(
+                            size: const Size(320, 320),
+                            painter: PlotPreviewPainter(
+                              points: _recordedPoints,
+                              currentPosition:
+                                  _recordedPoints.length >= PlotGeometry.requiredPointCount
+                                  ? null
+                                  : _currentPosition,
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                ),
               ),
             ),
             const SizedBox(height: 16),
@@ -337,236 +440,30 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
             const SizedBox(height: 8),
             _recordedPoints.isEmpty
                 ? const Padding(
-              padding: EdgeInsets.symmetric(vertical: 24),
-              child: Center(
-                child: Text('No points recorded yet'),
-              ),
-            )
+                    padding: EdgeInsets.symmetric(vertical: 24),
+                    child: Center(child: Text('No points recorded yet')),
+                  )
                 : ListView.separated(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: _recordedPoints.length,
-              separatorBuilder: (_, __) => const Divider(height: 1),
-              itemBuilder: (context, index) {
-                final point = _recordedPoints[index];
-                return ListTile(
-                  leading: CircleAvatar(
-                    child: Text('${index + 1}'),
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: _recordedPoints.length,
+                    separatorBuilder: (_, __) => const Divider(height: 1),
+                    itemBuilder: (context, index) {
+                      final point = _recordedPoints[index];
+                      return ListTile(
+                        leading: CircleAvatar(child: Text('${index + 1}')),
+                        title: Text(
+                          '${point.latitude.toStringAsFixed(6)}, ${point.longitude.toStringAsFixed(6)}',
+                        ),
+                        subtitle: Text(
+                          'Accuracy: ${point.accuracy.toStringAsFixed(2)} m',
+                        ),
+                      );
+                    },
                   ),
-                  title: Text(
-                    '${point.latitude.toStringAsFixed(6)}, ${point.longitude.toStringAsFixed(6)}',
-                  ),
-                  subtitle: Text(
-                    'Accuracy: ${point.accuracy.toStringAsFixed(2)} m',
-                  ),
-                );
-              },
-            ),
           ],
         ),
       ),
     );
-  }
-}
-
-class PlotPreviewPainter extends CustomPainter {
-  final List<RecordedPoint> points;
-  final Position? currentPosition;
-
-  PlotPreviewPainter({
-    required this.points,
-    required this.currentPosition,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final backgroundPaint = Paint()
-      ..color = Colors.white
-      ..style = PaintingStyle.fill;
-    canvas.drawRect(Offset.zero & size, backgroundPaint);
-
-    final gridPaint = Paint()
-      ..color = Colors.grey.shade300
-      ..strokeWidth = 1;
-
-    for (double x = 0; x <= size.width; x += 80) {
-      canvas.drawLine(Offset(x, 0), Offset(x, size.height), gridPaint);
-    }
-
-    for (double y = 0; y <= size.height; y += 80) {
-      canvas.drawLine(Offset(0, y), Offset(size.width, y), gridPaint);
-    }
-
-    final previewPoints = <RecordedPoint>[
-      ...points,
-      if (currentPosition != null)
-        RecordedPoint(
-          latitude: currentPosition!.latitude,
-          longitude: currentPosition!.longitude,
-          accuracy: currentPosition!.accuracy,
-          timestamp: DateTime.now(),
-        ),
-    ];
-
-    if (previewPoints.isEmpty) return;
-
-    final mappedPreviewPoints = _mapPointsToCanvas(previewPoints, size);
-    final mappedRecordedPoints =
-        mappedPreviewPoints.take(points.length).toList();
-
-    final linePaint = Paint()
-      ..color = Colors.blue.shade700
-      ..strokeWidth = 4
-      ..style = PaintingStyle.stroke;
-
-    final fillPaint = Paint()
-      ..color = Colors.blue.withOpacity(0.20)
-      ..style = PaintingStyle.fill;
-
-    final recordedPointPaint = Paint()
-      ..color = Colors.red.shade600
-      ..style = PaintingStyle.fill;
-
-    final currentPointPaint = Paint()
-      ..color = Colors.green.shade600
-      ..style = PaintingStyle.fill;
-
-    final previewLinePaint = Paint()
-      ..color = Colors.green.shade700
-      ..strokeWidth = 3
-      ..style = PaintingStyle.stroke;
-
-    final textStyle = TextStyle(
-      color: Colors.black87,
-      fontSize: 24,
-      fontWeight: FontWeight.w600,
-    );
-
-    if (mappedRecordedPoints.length >= 2) {
-      final path = Path()
-        ..moveTo(mappedRecordedPoints.first.dx, mappedRecordedPoints.first.dy);
-
-      for (int i = 1; i < mappedRecordedPoints.length; i++) {
-        path.lineTo(mappedRecordedPoints[i].dx, mappedRecordedPoints[i].dy);
-      }
-
-      if (mappedRecordedPoints.length >= 4) {
-        path.close();
-        canvas.drawPath(path, fillPaint);
-      }
-
-      canvas.drawPath(path, linePaint);
-    }
-
-    for (int i = 0; i < mappedRecordedPoints.length; i++) {
-      final point = mappedRecordedPoints[i];
-      canvas.drawCircle(point, 10, recordedPointPaint);
-
-      final textPainter = TextPainter(
-        text: TextSpan(
-          text: '${i + 1}',
-          style: textStyle,
-        ),
-        textDirection: TextDirection.ltr,
-      )..layout();
-
-      textPainter.paint(canvas, point + const Offset(14, -22));
-    }
-
-    if (currentPosition != null && mappedPreviewPoints.isNotEmpty) {
-      final currentPreviewPoint = mappedPreviewPoints.last;
-
-      if (mappedRecordedPoints.isNotEmpty) {
-        _drawDashedLine(
-          canvas,
-          mappedRecordedPoints.last,
-          currentPreviewPoint,
-          previewLinePaint,
-        );
-      }
-
-      canvas.drawCircle(currentPreviewPoint, 12, currentPointPaint);
-
-      final previewTextPainter = TextPainter(
-        text: TextSpan(
-          text: 'CURRENT',
-          style: textStyle.copyWith(
-            color: Colors.green.shade800,
-            fontSize: 20,
-          ),
-        ),
-        textDirection: TextDirection.ltr,
-      )..layout();
-
-      previewTextPainter.paint(
-        canvas,
-        currentPreviewPoint + const Offset(20, -34),
-      );
-    }
-  }
-
-  List<Offset> _mapPointsToCanvas(List<RecordedPoint> sourcePoints, Size size) {
-    final minLat = sourcePoints.map((p) => p.latitude).reduce(math.min);
-    final maxLat = sourcePoints.map((p) => p.latitude).reduce(math.max);
-    final minLng = sourcePoints.map((p) => p.longitude).reduce(math.min);
-    final maxLng = sourcePoints.map((p) => p.longitude).reduce(math.max);
-
-    double latRange = maxLat - minLat;
-    double lngRange = maxLng - minLng;
-
-    if (latRange == 0) latRange = 0.0001;
-    if (lngRange == 0) lngRange = 0.0001;
-
-    const padding = 80.0;
-    final usableWidth = size.width - padding * 2;
-    final usableHeight = size.height - padding * 2;
-
-    return sourcePoints.map((p) {
-      final x = padding + ((p.longitude - minLng) / lngRange) * usableWidth;
-      final y = size.height -
-          padding -
-          ((p.latitude - minLat) / latRange) * usableHeight;
-      return Offset(x, y);
-    }).toList();
-  }
-
-  void _drawDashedLine(
-    Canvas canvas,
-    Offset start,
-    Offset end,
-    Paint paint,
-  ) {
-    const dashWidth = 12.0;
-    const dashSpace = 8.0;
-
-    final dx = end.dx - start.dx;
-    final dy = end.dy - start.dy;
-    final distance = math.sqrt(dx * dx + dy * dy);
-
-    if (distance == 0) return;
-
-    final unitX = dx / distance;
-    final unitY = dy / distance;
-
-    double currentDistance = 0;
-
-    while (currentDistance < distance) {
-      final x1 = start.dx + unitX * currentDistance;
-      final y1 = start.dy + unitY * currentDistance;
-
-      final nextDistance = math.min(currentDistance + dashWidth, distance);
-      final x2 = start.dx + unitX * nextDistance;
-      final y2 = start.dy + unitY * nextDistance;
-
-      canvas.drawLine(Offset(x1, y1), Offset(x2, y2), paint);
-
-      currentDistance += dashWidth + dashSpace;
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant PlotPreviewPainter oldDelegate) {
-    return oldDelegate.points != points ||
-        oldDelegate.currentPosition != currentPosition;
   }
 }

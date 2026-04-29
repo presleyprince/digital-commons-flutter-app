@@ -13,6 +13,8 @@ import 'package:digital_shores/app/presentation/pages/information/add_informatio
 import 'package:digital_shores/app/presentation/pages/information/information_detail_page.dart';
 import 'package:digital_shores/app/presentation/pages/information/information_page.dart';
 import 'package:digital_shores/app/presentation/pages/plot/my_plot_page.dart';
+import 'package:digital_shores/app/presentation/pages/plot/saved_plot_detail_page.dart';
+import 'package:digital_shores/app/presentation/pages/plot/saved_plots_page.dart';
 import 'package:digital_shores/app/presentation/pages/profile/delete_account_otp_page.dart';
 import 'package:digital_shores/app/presentation/pages/profile/delete_account_page.dart';
 import 'package:digital_shores/app/presentation/pages/profile/edit_profile_page.dart';
@@ -120,6 +122,18 @@ final router = GoRouter(
                 GoRoute(
                   path: 'gps-test',
                   builder: (context, state) => const GpsRecordPage(),
+                ),
+                GoRoute(
+                  path: 'saved-plots',
+                  builder: (context, state) => const SavedPlotsPage(),
+                  routes: [
+                    GoRoute(
+                      path: ':id',
+                      builder: (context, state) => SavedPlotDetailPage(
+                        plotId: state.pathParameters['id']!,
+                      ),
+                    ),
+                  ],
                 ),
                 GoRoute(
                   path: 'my-finance',

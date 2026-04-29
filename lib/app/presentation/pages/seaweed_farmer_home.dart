@@ -9,7 +9,7 @@ class SeaweedFarmerHome extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Seaweed Farming Home'),
+        title: const Text('SEAWEED TEST 123'),
       ),
       body: SafeArea(
         child: Padding(
@@ -32,7 +32,15 @@ class SeaweedFarmerHome extends StatelessWidget {
               const SizedBox(height: 24),
               ElevatedButton.icon(
                 onPressed: () {
-                  context.go('/home/gps-test');
+                  context.push('/home/saved-plots');
+                },
+                icon: const Icon(Icons.folder_open_outlined),
+                label: const Text('Open Saved Plots'),
+              ),
+              const SizedBox(height: 12),
+              ElevatedButton.icon(
+                onPressed: () {
+                  context.push('/home/gps-test');
                 },
                 icon: const Icon(Icons.add_location_alt),
                 label: const Text('Open GPS Plot Recorder'),
