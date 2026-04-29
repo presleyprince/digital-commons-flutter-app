@@ -150,7 +150,7 @@ Future<void> init() async {
   sl.registerFactory(() => AdministrationNotifier(repository: sl()));
   sl.registerFactory(() => InformationNotifier(repository: sl()));
   sl.registerFactory(() => AddInformationNotifier(repository: sl()));
-  sl.registerFactory(() => WeatherNotifier(repository: sl()));
+  sl.registerLazySingleton(() => WeatherNotifier(repository: sl())); // added to make sure the whole app shares one single WeatherNotifier instead of creating a new empty one each time its needed
 
   // External
   final sharedPreferences = await SharedPreferences.getInstance();
