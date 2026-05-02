@@ -19,10 +19,8 @@ class InformationImageInput extends StatelessWidget {
       enabled: false,
       autovalidateMode: AutovalidateMode.onUserInteraction,
       validator: (value) {
-        if (notifier.imageController.value == null && notifier.selectedData == null) {
-          return 'Gambar harus diisi';
-        }
-        return null;
+        // removed validator condition, no image still works
+        return null; // image is optional
       },
       builder: (field) {
         return Column(

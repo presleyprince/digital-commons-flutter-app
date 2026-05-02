@@ -10,7 +10,7 @@ abstract class InformationRepository {
   Future<Either<Failure, Information>> getInformationById({required String id});
   Future<Either<Failure, Information>> addInformation({
     required String title,
-    required File image,
+    File? image, // removed required to nullable, dont need images as a must for news
     required String content,
     required String authorId,
     required String authorName,

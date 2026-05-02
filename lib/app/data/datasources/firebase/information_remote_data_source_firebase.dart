@@ -20,11 +20,12 @@ class InformationRemoteDataSourceFirebase extends InformationRemoteDataSource {
   Future<InformationModel> addInformation(AddInformationParameter params) async {
     final docRef = _firestore.collection(informationsCollection).doc();
 
-    // upload image to firebase storage
-    final imageRef = _firebaseStorage.ref().child('informations/${docRef.id}.jpg');
-    await imageRef.putFile(params.image);
-    final imageUrl = await imageRef.getDownloadURL();
-
+String imageUrl = '';
+if (params.image != null) { // added this since we switched to text only news, it would fail if an image was uploaded
+  final imageRef = _firebaseStorage.ref().child('informations/${docRef.id}.jpg'); // checks if an image is uploaded if null it skips the upload and leavses imageurl as an empty string, if an image exists it uploads to the firebase 
+  await imageRef.putFile(params.image!);
+  imageUrl = await imageRef.getDownloadURL();
+}
     final createdAt = DateTime.now().toUtc().millisecondsSinceEpoch;
 
     final information = InformationModel(

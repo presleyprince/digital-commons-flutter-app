@@ -30,7 +30,7 @@ class _AddInformationPageState extends State<AddInformationPage> {
 
   @override
   void initState() {
-    PathGuard.adminGuard(context);
+   PathGuard.adminGuard(context); 
     notifier = Provider.of<AddInformationNotifier>(context, listen: false);
     notifier.initForm();
     super.initState();
@@ -231,7 +231,7 @@ class _AddInformationPageState extends State<AddInformationPage> {
                     text: 'Tambah',
                     onPressed: () {
                       final authorId =
-                          Provider.of<AuthNotifier>(context, listen: false).userData!.id;
+                          Provider.of<AuthNotifier>(context, listen: false).userData?.id ?? ''; // fallback to the empty string if userdata is null to avoid hardcoded test values from the firebase
                       if (notifier.isEdit()) {
                         notifier.updateInformation(authorId);
                       } else {

@@ -16,7 +16,7 @@ class GetInformationByIdParameter {
 
 class AddInformationParameter {
   final String title;
-  final File image;
+  final File? image;
   final String content;
   final String authorId;
   final String authorName;
@@ -24,7 +24,7 @@ class AddInformationParameter {
 
   AddInformationParameter({
     required this.title,
-    required this.image,
+    this.image, // removed the required
     required this.content,
     required this.authorId,
     required this.authorName,
