@@ -21,6 +21,8 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'injection_container.dart' as di;
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:digital_shores/app/data/datasources/firebase/location_remote_data_source_firebase.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
