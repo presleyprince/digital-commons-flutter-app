@@ -59,7 +59,7 @@ final List<HomeMenu> kHomeMenu = [
   ),
   HomeMenu(
     image: R.ASSETS_ICONS_SEAWEED_HOME_PNG, // need to update icon
-    title: 'Seaweed page', //change to Indonesian
+    title: 'Rumput Laut', //change to Indonesian
     route: 'seaweed-home',
   ),
   // removed Cuaca, now a widget
