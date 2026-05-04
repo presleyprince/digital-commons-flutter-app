@@ -27,6 +27,8 @@ class HomeMenuTile extends StatelessWidget {
             Image.asset(
               menu.image,
               width: 64,
+              height: 64,
+              fit: BoxFit.contain,
             ),
             Container(
               decoration: BoxDecoration(
