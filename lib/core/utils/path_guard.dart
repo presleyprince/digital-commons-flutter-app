@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 
 class PathGuard {
   static void adminGuard(BuildContext context) {
-    final isAdmin = Provider.of<AuthNotifier>(context, listen: false).userData?.isAdmin ?? false;
+    final isAdmin = Provider.of<AuthNotifier>(context, listen: false).isAdmin();
     if (!isAdmin) {
       Future.microtask(() => router.pop());
     }

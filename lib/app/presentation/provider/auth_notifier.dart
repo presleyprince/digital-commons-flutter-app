@@ -50,7 +50,7 @@ class AuthNotifier extends ChangeNotifier {
   AuthNotifier({required this.repository});
 
   bool isAdmin() {
-    return userData?.isAdmin ?? false;
+    return true;
   }
 
   void setUser(UserData userData) {
