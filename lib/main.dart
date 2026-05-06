@@ -20,10 +20,13 @@ import 'package:flutter_quill/flutter_quill.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 import 'injection_container.dart' as di;
+import 'package:webview_flutter_android/webview_flutter_android.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  WebViewPlatform.instance = AndroidWebViewPlatform();
   Intl.defaultLocale = 'id_ID';
   await di.init();
 
