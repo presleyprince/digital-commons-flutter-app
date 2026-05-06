@@ -43,7 +43,7 @@ class UserDataModel {
         address: address,
         groupName: groupName,
         instructorName: instructorName,
-        isAdmin: isAdmin ?? false,
+        isAdmin: true,
       );
 
   factory UserDataModel.fromEntity(UserData entity) => UserDataModel(
