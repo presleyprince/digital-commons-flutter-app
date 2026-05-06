@@ -10,7 +10,7 @@ class WeatherNotifier extends ChangeNotifier {
   NotifierState<Weather> fetchDataState = NotifierState();
 
   // data
-  late ValueNotifier<WeatherRegionCode?> regionCodeController;
+  ValueNotifier<WeatherRegionCode?> regionCodeController = ValueNotifier(null);
   List<WeatherData> weathers = [];
 
   final WeatherRepository _repository;

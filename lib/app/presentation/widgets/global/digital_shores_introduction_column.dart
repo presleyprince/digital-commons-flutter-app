@@ -1,6 +1,9 @@
+import 'package:digital_shores/app/presentation/provider/weather_notifier.dart';
 import 'package:digital_shores/const/resource.dart';
 import 'package:digital_shores/core/constants.dart';
+import 'package:digital_shores/router.dart'; // Added so it will lets us navigate to weather page
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class DigitalShoresIntroductionColumn extends StatelessWidget {
   const DigitalShoresIntroductionColumn({
@@ -22,56 +25,85 @@ class DigitalShoresIntroductionColumn extends StatelessWidget {
                   children: [
                     Image.asset(
                       R.ASSETS_IMAGES_APP_LOGO_PNG,
-                      height: 40, // reduced to make more compact
+                      height: 40,
                     ),
-                    const SizedBox(width: 8), // lowered the gap
+                    const SizedBox(width: 8),
                     Text('Hai Sobat Laut!', style: kTitle6TextStyle),
                   ],
                 ),
               )
             : SizedBox(),
 
-        // removed large beach image and line below it
+        
+        InkWell(
+          onTap: () => router.push('/home/weather'),
+          borderRadius: BorderRadius.circular(kDefaultRadius),
+          child: Consumer<WeatherNotifier>( 
+            builder: (context, notifier, child) {
 
-        // added new weather card
-        Container (
-          width: double.infinity, // create a box that will stretch the full width of the screen
-          padding: EdgeInsets.all(16), //  add space inside the box
-
-          decoration: BoxDecoration ( //styling the box
-            color: Color(0xFF1A73E8), // set to blue
-            borderRadius: BorderRadius.circular(kDefaultRadius), // rounded corners for box
-          ),
-          child: Column( // stack everything vertically in the box
-            crossAxisAlignment: CrossAxisAlignment.start, // line everything to the left
-            children: [
-              Text(
-                'Cuaca Hari Ini', // 'Today's Weather' at the top
-                style: kTitle5TextStyle.copyWith(color: Colors.white), // white text, kTitle5TextStyle is defined as a constant in constants.dart
-               ),
-              const SizedBox(height: 8), // the sun icon and temeprature can be next to each other
-              Row(
-                children: [ // list of things to diplay
-                  Icon(Icons.wb_sunny, color:Colors.white, size:40), // sun icon from Flutter's library
-                  const SizedBox(width: 12), // creating gap between the icon and text
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start, // start aligns everything to the left
-                    children: [
-                      Text( // temperature number need to change from text to automatic detection
-                        '28C',
-                        style: kTitle5TextStyle.copyWith(color: Colors.white),
-                      ),
-                      Text( // description after temperature, text faded
-                        'Cerah, Cocok untuk melaut', // 'Clear, Good for Fishing'
-                        style: kSubtitle5TextStyle.copyWith(color: Colors.white70), // used 70 for 70% opactiy
-                      ),
-                    ],
+              try {
+                notifier.regionCodeController;
+              } catch (e) {
+                return Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Color(0xFF1A73E8),
+                    borderRadius: BorderRadius.circular(kDefaultRadius),
                   ),
-                ],
-              ),
-            ],
-          ),
-        ),
+                  child: Text(
+                    'Memuat cuaca...',
+                    style: kTitle5TextStyle.copyWith(color: Colors.white),
+                  ),
+                );
+              }
+
+              final hasWeather = notifier.weathers.isNotEmpty;
+              final weather = hasWeather ? notifier.weathers.first : null;
+              final tempText = weather?.t != null ? '${weather!.t}°C' : '--°C';
+              final descText = weather?.weatherDesc ?? 'Pilih lokasi di menu Cuaca';
+
+              return Container(
+                width: double.infinity,
+                padding: EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Color(0xFF1A73E8),
+                  borderRadius: BorderRadius.circular(kDefaultRadius),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Cuaca Hari Ini',
+                      style: kTitle5TextStyle.copyWith(color: Colors.white),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Icon(Icons.wb_sunny, color: Colors.white, size: 40),
+                        const SizedBox(width: 12),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              tempText,
+                              style: kTitle5TextStyle.copyWith(color: Colors.white),
+                            ),
+                            Text(
+                              descText,
+                              style: kSubtitle5TextStyle.copyWith(color: Colors.white70),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              );
+            },
+          ), 
+        ), 
+
         const SizedBox(height: 16),
       ],
     );

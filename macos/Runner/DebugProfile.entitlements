@@ -8,5 +8,7 @@
 	<true/>
 	<key>com.apple.security.network.server</key>
 	<true/>
+	<key>com.apple.security.network.client</key> // added to connect to internet for weather
+	<true/>
 </dict>
 </plist>

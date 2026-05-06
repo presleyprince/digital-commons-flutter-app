@@ -7,9 +7,24 @@ import 'package:digital_shores/core/constants.dart';
 import 'package:digital_shores/router.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:digital_shores/app/presentation/provider/weather_notifier.dart'; // access WeatherNotifier
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget { // changed from stateless to stateful so it can be run on startup
   const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<WeatherNotifier>(context, listen: false).init();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

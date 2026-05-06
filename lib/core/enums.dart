@@ -79,7 +79,7 @@ enum WeatherRegionCode {
   barrangCaddi('Kelurahan Barrang Caddi', '73.71.15.1001'),
   galesongKota('Desa Galesong Kota', '73.05.09.2002'),
   kalukubodo('Desa Kalukubodo', '73.05.05.2017'),
-  laikang('Desa Laikang', '73.05.02.2005');
+  laikang('Desa Laikang', '73.05.12.2006'); // replaced to fix not loading data with correct amd4 code
 
   final String region;
   final String regionCode;
