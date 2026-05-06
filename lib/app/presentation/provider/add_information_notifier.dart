@@ -71,7 +71,7 @@ class AddInformationNotifier extends ChangeNotifier {
 
     final result = await _repository.addInformation(
       title: titleController.text,
-      image: imageController.value!,
+      image: imageController.value,
       content: jsonEncode(contentController.document.toDelta().toJson()),
       authorId: authorId,
       authorName: authorController.text,

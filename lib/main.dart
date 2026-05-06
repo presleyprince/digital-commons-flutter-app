@@ -68,6 +68,7 @@ class _AppState extends State<App> {
         theme: AppTheme().theme,
         debugShowCheckedModeBanner: false,
         localizationsDelegates: const [
+        FlutterQuillLocalizations.delegate, // added for news information addtions to work since it uses flutter quill rich editor which needs localisation to fix UI strings
         GlobalMaterialLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,

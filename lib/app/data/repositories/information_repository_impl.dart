@@ -22,7 +22,7 @@ class InformationRepositoryImpl extends InformationRepository {
   @override
   Future<Either<Failure, Information>> addInformation(
       {required String title,
-      required File image,
+      File? image, // removed required, dont need image for news as a must
       required String content,
       required String authorId,
       required String authorName,
