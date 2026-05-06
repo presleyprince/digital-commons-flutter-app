@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class PlotFormPage extends StatefulWidget {
   const PlotFormPage({super.key});
@@ -319,7 +320,38 @@ class _PlotFormPageState extends State<PlotFormPage> {
             const SizedBox(height: 24),
 
             ElevatedButton(
-              onPressed: () {},
+              onPressed: () async {
+                try {
+                  await FirebaseFirestore.instance.collection('plot_forms').add({
+                    'owner_name': _ownerName.text.trim(),
+                    'owner_address': _ownerAddress.text.trim(),
+                    'ownership_start_date': _ownershipStartDate.text,
+                    'previous_owner': _previousOwner.text.trim(),
+                    'ownership_through': _ownershipThrough.text,
+                    'operator_name': _isSameAsOwner ? _ownerName.text.trim() : _operatorName.text.trim(),
+                    'operator_address': _isSameAsOwner ? _ownerAddress.text.trim() : _operatorAddress.text.trim(),
+                    'lease_period': _leasePeriod.text.trim(),
+                    'type_of_seaweed': _typeOfSeaweed.text.trim(),
+                    'planting_cycle': _plantingCycle.text.trim(),
+                    'production_capacity': _productionCapacity.text.trim(),
+                    'adjacent_plot_owners': [
+                      _adjacentPlotOwners1.text.trim(),
+                      _adjacentPlotOwners2.text.trim(),
+                      _adjacentPlotOwners3.text.trim(),
+                      _adjacentPlotOwners4.text.trim(),
+                    ].where((e) => e.isNotEmpty).toList(),
+                    'submitted_at': FieldValue.serverTimestamp(),
+                  });
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Form submitted successfully!')),
+                  );
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error submitting form: $e')),
+                  );
+                }
+              },
               child: const Text('Submit'),
             ),
           ],
