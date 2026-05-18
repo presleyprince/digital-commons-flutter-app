@@ -15,6 +15,20 @@ class _SavedPlotsPageState extends State<SavedPlotsPage> {
   final PlotLocalStorage _plotLocalStorage = PlotLocalStorage();
   late Future<List<SavedPlot>> _plotsFuture;
 
+  Color _statusColor(BuildContext context, bool isSynced) {
+    return isSynced
+        ? Colors.green.shade100
+        : Theme.of(context).colorScheme.secondaryContainer;
+  }
+
+  Color _statusTextColor(bool isSynced) {
+    return isSynced ? Colors.green.shade900 : Colors.orange.shade900;
+  }
+
+  String _statusLabel(bool isSynced) {
+    return isSynced ? 'Submitted' : 'Not submitted';
+  }
+
   @override
   void initState() {
     super.initState();
@@ -106,7 +120,32 @@ class _SavedPlotsPageState extends State<SavedPlotsPage> {
                       if (!mounted) return;
                       await _refreshPlots();
                     },
-                    title: Text(plot.name),
+                    title: Row(
+                      children: [
+                        Expanded(
+                          child: Text(plot.name),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: _statusColor(context, plot.isSynced),
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                          child: Text(
+                            _statusLabel(plot.isSynced),
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: _statusTextColor(plot.isSynced),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                     subtitle: Text(
                       'Area: ${plot.areaSquareMeters.toStringAsFixed(2)} m^2\n'
                       'Updated: ${dateFormat.format(plot.updatedAt)}\n'

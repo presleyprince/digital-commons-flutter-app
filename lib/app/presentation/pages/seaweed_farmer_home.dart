@@ -9,7 +9,7 @@ class SeaweedFarmerHome extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('SEAWEED TEST 123'),
+        title: const Text('Rumput Laut'),
       ),
       body: SafeArea(
         child: Padding(
@@ -32,14 +32,6 @@ class SeaweedFarmerHome extends StatelessWidget {
               const SizedBox(height: 24),
               ElevatedButton.icon(
                 onPressed: () {
-                  context.push('/home/saved-plots');
-                },
-                icon: const Icon(Icons.folder_open_outlined),
-                label: const Text('Open Saved Plots'),
-              ),
-              const SizedBox(height: 12),
-              ElevatedButton.icon(
-                onPressed: () {
                   context.push('/home/gps-test');
                 },
                 icon: const Icon(Icons.add_location_alt),
@@ -48,10 +40,10 @@ class SeaweedFarmerHome extends StatelessWidget {
               const SizedBox(height: 12),
               ElevatedButton.icon(
                 onPressed: () {
-                  context.push('/home/plot-form');
+                  context.push('/home/saved-plots');
                 },
                 icon: const Icon(Icons.task_alt),
-                label: const Text('Verify Existing Plot'),
+                label: const Text('Choose Plot For Form'),
               ),
             ],
           ),
