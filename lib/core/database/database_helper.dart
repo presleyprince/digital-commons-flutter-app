@@ -16,13 +16,16 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 2,
+      version: 3,
       onCreate: (db, version) async {
         await _createTables(db);
       },
       onUpgrade: (db, oldVersion, newVersion) async {
         if (oldVersion < 2) {
           await _createPlotTables(db);
+        }
+        if (oldVersion < 3) {
+          await _createPlotFormTables(db);
         }
       },
     );
@@ -123,6 +126,7 @@ class DatabaseHelper {
     ''');
 
     await _createPlotTables(db);
+    await _createPlotFormTables(db);
   }
 
   Future<void> _createPlotTables(Database db) async {
@@ -154,6 +158,31 @@ class DatabaseHelper {
     await db.execute('''
       CREATE INDEX IF NOT EXISTS idx_saved_plot_points_plot_id
       ON saved_plot_points(plot_id)
+    ''');
+  }
+
+  Future<void> _createPlotFormTables(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS plot_forms (
+        plot_id TEXT PRIMARY KEY,
+        owner_name TEXT NOT NULL,
+        owner_address TEXT NOT NULL,
+        ownership_start_date TEXT NOT NULL,
+        previous_owner TEXT NOT NULL,
+        ownership_through TEXT NOT NULL,
+        is_same_as_owner INTEGER NOT NULL DEFAULT 0,
+        operator_name TEXT NOT NULL,
+        operator_address TEXT NOT NULL,
+        lease_period TEXT NOT NULL,
+        type_of_seaweed TEXT NOT NULL,
+        planting_cycle TEXT NOT NULL,
+        production_capacity TEXT NOT NULL,
+        adjacent_plot_owners TEXT NOT NULL,
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL,
+        is_synced INTEGER NOT NULL DEFAULT 0,
+        FOREIGN KEY (plot_id) REFERENCES saved_plots (id) ON DELETE CASCADE
+      )
     ''');
   }
 }
