@@ -9,6 +9,7 @@ class UserData {
   final String? groupName;
   final String? instructorName;
   final bool isAdmin;
+  final UserRole role; // declares every userdata object must have a role and can't be null
 
   UserData({
     required this.id,
@@ -19,5 +20,6 @@ class UserData {
     this.groupName,
     this.instructorName,
     required this.isAdmin,
+    this.role = UserRole.user, // set the default role if no role is passed automatically be userrole.user
   });
 }
