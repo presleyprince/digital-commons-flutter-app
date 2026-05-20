@@ -340,6 +340,9 @@ class _PlotFormPageState extends State<PlotFormPage> {
                       _adjacentPlotOwners3.text.trim(),
                       _adjacentPlotOwners4.text.trim(),
                     ].where((e) => e.isNotEmpty).toList(),
+                    'status': 'PENDING',
+                    'verified_at': null,
+                    
                     'submitted_at': FieldValue.serverTimestamp(),
                   });
 

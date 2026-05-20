@@ -53,6 +53,14 @@ class SeaweedFarmerHome extends StatelessWidget {
                 icon: const Icon(Icons.task_alt),
                 label: const Text('Verify Existing Plot'),
               ),
+              const SizedBox(height: 12),
+              ElevatedButton.icon(
+                onPressed: () {
+                  context.push('/verify-plots');
+                },
+                icon: const Icon(Icons.verified_user),
+                label: const Text('Verify Plots'),
+              ),
             ],
           ),
         ),
