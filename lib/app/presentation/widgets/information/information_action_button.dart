@@ -37,17 +37,12 @@ class InformationActionButton extends StatelessWidget {
             );
           }),
           const SizedBox(height: 12),
-          Consumer<AuthNotifier>(
-            builder: (context, authNotifier, child) {
-              return authNotifier.isAdmin()
-                  ? PrimaryElevatedButton(
-                      text: 'Tambah Informasi',
-                      onPressed: () => router.push('/information/add'),
-                      
-                    )
-                  : const SizedBox();
-            },
-          ),
+          Provider.of<AuthNotifier>(context, listen: false).isAdmin()
+              ? PrimaryElevatedButton(
+                  text: 'Tambah Informasi',
+                  onPressed: () => router.push('/home/add-information'),
+                )
+              : SizedBox(),
         ],
       ),
     );
