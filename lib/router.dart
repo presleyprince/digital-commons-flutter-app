@@ -138,12 +138,16 @@ final router = GoRouter(
                       builder: (context, state) => SavedPlotDetailPage(
                         plotId: state.pathParameters['id']!,
                       ),
+                      routes: [
+                        GoRoute(
+                          path: 'form',
+                          builder: (context, state) => PlotFormPage(
+                            plotId: state.pathParameters['id']!,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
-                ),
-                GoRoute(
-                  path: 'plot-form',
-                  builder: (context, state) => const PlotFormPage(),
                 ),
                 GoRoute(
                   path: 'my-finance',

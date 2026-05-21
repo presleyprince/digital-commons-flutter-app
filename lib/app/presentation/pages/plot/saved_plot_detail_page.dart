@@ -3,6 +3,7 @@ import 'package:digital_shores/app/presentation/pages/plot/painters/plot_preview
 import 'package:digital_shores/app/presentation/pages/plot/storage/plot_local_storage.dart';
 import 'package:digital_shores/core/constants.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 class SavedPlotDetailPage extends StatefulWidget {
@@ -69,6 +70,23 @@ class _SavedPlotDetailPageState extends State<SavedPlotDetailPage> {
                         Text('Created: ${dateFormat.format(plot.createdAt)}'),
                         const SizedBox(height: 8),
                         Text('Updated: ${dateFormat.format(plot.updatedAt)}'),
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: () async {
+                              await context.push('/home/saved-plots/${plot.id}/form');
+                              if (!mounted) {
+                                return;
+                              }
+                              setState(() {
+                                _plotFuture = _plotLocalStorage.getPlotById(widget.plotId);
+                              });
+                            },
+                            icon: const Icon(Icons.description_outlined),
+                            label: const Text('Open Plot Form'),
+                          ),
+                        ),
                       ],
                     ),
                   ),

@@ -95,6 +95,22 @@ class PlotLocalStorage {
     });
   }
 
+  Future<void> updatePlotSyncStatus({
+    required String plotId,
+    required bool isSynced,
+  }) async {
+    final db = await _databaseHelper.database;
+    await db.update(
+      'saved_plots',
+      {
+        'is_synced': isSynced ? 1 : 0,
+        'updated_at': DateTime.now().millisecondsSinceEpoch,
+      },
+      where: 'id = ?',
+      whereArgs: [plotId],
+    );
+  }
+
   Future<List<PlotPoint>> _getPointsForPlot(Database db, String plotId) async {
     final points = await db.query(
       'saved_plot_points',
