@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:digital_shores/core/constants.dart';
 import 'package:go_router/go_router.dart';
+import 'package:digital_shores/app/presentation/provider/auth_notifier.dart'; // added to ensure only admins/secretaries ccan access the page
+import 'package:provider/provider.dart';
 
 class SeaweedFarmerHome extends StatelessWidget {
   const SeaweedFarmerHome({super.key});
@@ -45,6 +47,7 @@ class SeaweedFarmerHome extends StatelessWidget {
                 icon: const Icon(Icons.task_alt),
                 label: const Text('Choose Plot For Form'),
               ),
+              if (Provider.of<AuthNotifier>(context, listen: false).isAdmin()) ...[ // added for security only admins and secretaries can access the verify plots page
               const SizedBox(height: 12),
               ElevatedButton.icon(
                 onPressed: () {
@@ -53,6 +56,7 @@ class SeaweedFarmerHome extends StatelessWidget {
                 icon: const Icon(Icons.verified_user),
                 label: const Text('Verify Plots'),
               ),
+            ],
             ],
           ),
         ),

@@ -50,7 +50,6 @@ class AuthNotifier extends ChangeNotifier {
   AuthNotifier({required this.repository});
 
   bool isAdmin() {
-      print('isAdmin: ${userData?.isAdmin}, role: ${userData?.role}');
       return (userData?.isAdmin ?? false) || userData?.role == UserRole.secretary; // changed so both secreatary and admin can add info and verify plots
   }
 
