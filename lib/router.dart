@@ -221,6 +221,10 @@ final router = GoRouter(
                   path: 'detail',
                   builder: (context, state) => InformationDetailPage(),
                 ),
+                GoRoute(
+                  path: 'add',
+                  builder: (context, state) => const AddInformationPage(),
+                ),
               ],
             ),
           ],
