@@ -26,6 +26,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:digital_shores/app/presentation/pages/plot/gps_record_page.dart';
 import 'package:digital_shores/app/presentation/pages/seaweed_farmer_home.dart';
+import 'package:digital_shores/app/presentation/pages/plot/verify_plots_page.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _sectionNavigatorKey = GlobalKey<NavigatorState>();
@@ -89,6 +90,10 @@ final router = GoRouter(
         StatefulShellBranch(
           navigatorKey: _sectionNavigatorKey,
           routes: [
+            GoRoute(
+            path: '/verify-plots',
+            builder: (context, state) => const VerifyPlotsPage(),
+            ),
             GoRoute(
               path: '/home',
               builder: (context, state) => const HomePage(),
