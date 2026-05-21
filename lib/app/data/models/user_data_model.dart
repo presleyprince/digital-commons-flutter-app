@@ -17,7 +17,7 @@ class UserDataModel {
   final String? groupName;
   @JsonKey(name: 'instructor_name')
   final String? instructorName;
-  @JsonKey(name: 'is_admin')
+  @JsonKey(name: 'isAdmin') // fixed to match firebase field
   final bool? isAdmin;
   @JsonKey(name: 'role') // added role, flutter will look for a field called role in the firebase (saved as number 1)
   final int? role;

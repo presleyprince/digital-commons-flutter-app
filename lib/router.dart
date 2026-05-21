@@ -28,6 +28,7 @@ import 'package:digital_shores/app/presentation/pages/plot/gps_record_page.dart'
 import 'package:digital_shores/app/presentation/pages/seaweed_farmer_home.dart';
 // add import to the new verify plots page for secretaries
 import 'package:digital_shores/core/utils/path_guard.dart';
+import 'package:digital_shores/app/presentation/pages/plot/verify_plots_page.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _sectionNavigatorKey = GlobalKey<NavigatorState>();
@@ -92,6 +93,10 @@ final router = GoRouter(
           navigatorKey: _sectionNavigatorKey,
           routes: [
             GoRoute(
+            path: '/verify-plots',
+            builder: (context, state) => const VerifyPlotsPage(),
+            ),
+            GoRoute(
               path: '/home',
               builder: (context, state) => const HomePage(),
               routes: [
@@ -135,12 +140,16 @@ final router = GoRouter(
                       builder: (context, state) => SavedPlotDetailPage(
                         plotId: state.pathParameters['id']!,
                       ),
+                      routes: [
+                        GoRoute(
+                          path: 'form',
+                          builder: (context, state) => PlotFormPage(
+                            plotId: state.pathParameters['id']!,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
-                ),
-                GoRoute(
-                  path: 'plot-form',
-                  builder: (context, state) => const PlotFormPage(),
                 ),
                 GoRoute(
                   path: 'my-finance',

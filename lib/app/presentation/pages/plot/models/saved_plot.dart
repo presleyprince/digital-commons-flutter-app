@@ -45,4 +45,26 @@ class SavedPlot {
       source: map['source'] as String,
     );
   }
+
+  SavedPlot copyWith({
+    String? id,
+    String? name,
+    List<PlotPoint>? points,
+    double? areaSquareMeters,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    bool? isSynced,
+    String? source,
+  }) {
+    return SavedPlot(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      points: points ?? this.points,
+      areaSquareMeters: areaSquareMeters ?? this.areaSquareMeters,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      isSynced: isSynced ?? this.isSynced,
+      source: source ?? this.source,
+    );
+  }
 }
