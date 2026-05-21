@@ -16,6 +16,7 @@ UserDataModel _$UserDataModelFromJson(Map<String, dynamic> json) =>
       groupName: json['group_name'] as String?,
       instructorName: json['instructor_name'] as String?,
       isAdmin: json['isAdmin'] as bool? ?? false,
+      role: (json['role'] as num?)?.toInt(),
     );
 
 Map<String, dynamic> _$UserDataModelToJson(UserDataModel instance) =>
@@ -28,4 +29,5 @@ Map<String, dynamic> _$UserDataModelToJson(UserDataModel instance) =>
       'group_name': instance.groupName,
       'instructor_name': instance.instructorName,
       'isAdmin': instance.isAdmin,
+      'role': instance.role,
     };

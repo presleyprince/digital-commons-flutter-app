@@ -194,13 +194,6 @@ final router = GoRouter(
                         return AddAdministrationPage();
                       },
                     ),
-                    GoRoute( // new route page for secretary to verify plots
-                      path: 'verify-plots', // path to access the verify plots page
-                      builder: (context, state) { // runs when navigated to the url
-                        PathGuard.secretaryGuard(context); // checks if the user is a secretary or admin
-                        return const Scaffold(body: Center(child: Text('Coming Soon')));; // NEED TO FIX ONCE VERIFY PLOTS PAGE IS READY
-                      },
-                    )
                   ],
                 ),
               ],
