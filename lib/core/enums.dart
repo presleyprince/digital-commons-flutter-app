@@ -85,3 +85,12 @@ enum WeatherRegionCode {
   final String regionCode;
   const WeatherRegionCode(this.region, this.regionCode);
 }
+
+enum UserRole { // adding admin role to New Secretary role
+  admin('Admin'),
+  secretary('Sekretaris'),
+  user('Pengguna');
+
+  final String label;
+  const UserRole(this.label);
+}

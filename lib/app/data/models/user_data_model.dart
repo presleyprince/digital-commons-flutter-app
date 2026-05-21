@@ -19,6 +19,8 @@ class UserDataModel {
   final String? instructorName;
   @JsonKey(name: 'isAdmin') // fixed to match firebase field
   final bool? isAdmin;
+  @JsonKey(name: 'role') // added role, flutter will look for a field called role in the firebase (saved as number 1)
+  final int? role;
 
   factory UserDataModel.fromJson(Map<String, dynamic> json) => _$UserDataModelFromJson(json);
 
@@ -33,6 +35,7 @@ class UserDataModel {
     this.groupName,
     this.instructorName,
     this.isAdmin = false,
+    this.role, // added so Userdatamodle object can optionally pass the role value, has to be listed in the constructor otherwise cant be set
   });
 
   UserData toEntity() => UserData(
@@ -44,6 +47,7 @@ class UserDataModel {
         groupName: groupName,
         instructorName: instructorName,
         isAdmin: isAdmin ?? false,
+        role: role != null ? UserRole.values[role!] : UserRole.user, // added so that if the role number exists in the firebase it it will be converted to match the enum value, otherwise keep it default to UserRole.user (if fire has 1 become secretary)
       );
 
   factory UserDataModel.fromEntity(UserData entity) => UserDataModel(
@@ -55,6 +59,7 @@ class UserDataModel {
         groupName: entity.groupName,
         instructorName: entity.instructorName,
         isAdmin: entity.isAdmin,
+        role: entity.role?.index, // converts enum back to a number to be saved in the firebase. UserRole.Secretary becomes 1
       );
 
   UserDataModel copyWith({
@@ -66,6 +71,7 @@ class UserDataModel {
     String? groupName,
     String? instructorName,
     bool? isAdmin,
+    int? role, // make sure copyWith can optionally update the role, it lets us create a copy of the object if fields have changed, role has to be listed like the others
   }) {
     return UserDataModel(
       id: id ?? this.id,
@@ -76,6 +82,7 @@ class UserDataModel {
       groupName: groupName ?? this.groupName,
       instructorName: instructorName ?? this.instructorName,
       isAdmin: isAdmin ?? this.isAdmin,
+      role: role ?? this.role, // use the new role if one was provided, otherwise use the existing role value, ?? if the left side is null use the right side
     );
   }
 }

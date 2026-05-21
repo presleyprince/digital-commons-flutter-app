@@ -30,7 +30,7 @@ class _AddInformationPageState extends State<AddInformationPage> {
 
   @override
   void initState() {
-   PathGuard.adminGuard(context); 
+   PathGuard.secretaryGuard(context);  // changed so secretaries can also access the add information page, not just admins
     notifier = Provider.of<AddInformationNotifier>(context, listen: false);
     notifier.initForm();
     super.initState();
