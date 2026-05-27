@@ -42,6 +42,14 @@ class SeaweedFarmerHome extends StatelessWidget {
               const SizedBox(height: 12),
               ElevatedButton.icon(
                 onPressed: () {
+                  context.push('/home/plot-overview');
+                },
+                icon: const Icon(Icons.grid_view_outlined),
+                label: const Text('Plot Overview'),
+              ),
+              const SizedBox(height: 12),
+              ElevatedButton.icon(
+                onPressed: () {
                   context.push('/home/saved-plots');
                 },
                 icon: const Icon(Icons.task_alt),
