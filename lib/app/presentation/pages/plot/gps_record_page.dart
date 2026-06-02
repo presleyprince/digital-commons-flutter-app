@@ -22,7 +22,7 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
 
   bool _isLoading = false;
   bool _isSaving = false;
-  String _statusText = 'No location fetched yet';
+  String _statusText = 'Belum ada lokasi'; //no location yet
   Position? _currentPosition;
   final List<PlotPoint> _recordedPoints = [];
 
@@ -326,7 +326,7 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'Current Status',
+                      'Status saat ini', //current status
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -335,13 +335,13 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
                     const SizedBox(height: 12),
                     Text(_statusText),
                     const SizedBox(height: 16),
-                    Text('Latitude: $latText'),
+                    Text('Garis lintang: $latText'), //latitude
                     const SizedBox(height: 8),
-                    Text('Longitude: $lngText'),
+                    Text('Garis bujur: $lngText'), //longitude
                     const SizedBox(height: 8),
-                    Text('Accuracy: $accuracyText'),
+                    Text('Ketepatan: $accuracyText'), //accuracy
                     const SizedBox(height: 12),
-                    Text('Recorded Points: ${_recordedPoints.length}/4'),
+                    Text('Poin Tercatat: ${_recordedPoints.length}/4'), //recorded points
                     const SizedBox(height: 8),
                     Text(
                       _recordedPoints.length < PlotGeometry.requiredPointCount
@@ -351,8 +351,8 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
                     const SizedBox(height: 8),
                     Text(
                       _recordedPoints.length < PlotGeometry.requiredPointCount
-                          ? 'Area: Not available yet'
-                          : 'Area: ${areaSquareMeters.toStringAsFixed(2)} m^2',
+                          ? 'Bidang: Tidak tersedia' //area, not available
+                          : 'Bidang: ${areaSquareMeters.toStringAsFixed(2)} m^2',
                     ),
                   ],
                 ),
@@ -366,33 +366,33 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
                 ElevatedButton.icon(
                   onPressed: _isLoading ? null : _getCurrentLocation,
                   icon: const Icon(Icons.my_location),
-                  label: Text(_isLoading ? 'Loading...' : 'Get Current Location'),
+                  label: Text(_isLoading ? 'Menunggu...' : 'Dapatkan lokasi saat ini'), //waiting, get current location
                 ),
                 ElevatedButton.icon(
                   onPressed: _recordCurrentPoint,
                   icon: const Icon(Icons.add_location_alt),
-                  label: const Text('Record Point'),
+                  label: const Text('Rekam titik'), //record point
                 ),
                 ElevatedButton.icon(
                   onPressed: _isSaving ? null : _savePlot,
                   icon: const Icon(Icons.save_alt),
-                  label: Text(_isSaving ? 'Saving...' : 'Save Plot'),
+                  label: Text(_isSaving ? 'Menyimpan...' : 'Simpan kavling'), //saving files, save plot
                 ),
                 OutlinedButton.icon(
                   onPressed: _undoLastPoint,
                   icon: const Icon(Icons.undo),
-                  label: const Text('Undo'),
+                  label: const Text('Membuka'), //undo
                 ),
                 OutlinedButton.icon(
                   onPressed: _clearAllPoints,
                   icon: const Icon(Icons.clear_all),
-                  label: const Text('Clear All'),
+                  label: const Text('Menghapus'), //remove
                 ),
               ],
             ),
             const SizedBox(height: 16),
             const Text(
-              'Shape Preview',
+              'Pratinjau', //preview
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -431,7 +431,7 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
             ),
             const SizedBox(height: 16),
             const Text(
-              'Recorded Point List',
+              'Poin yang tercatat', //recorded points
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -441,7 +441,7 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
             _recordedPoints.isEmpty
                 ? const Padding(
                     padding: EdgeInsets.symmetric(vertical: 24),
-                    child: Center(child: Text('No points recorded yet')),
+                    child: Center(child: Text('Belum ada poin yang tercatat')), //no recorded points yet
                   )
                 : ListView.separated(
                     shrinkWrap: true,

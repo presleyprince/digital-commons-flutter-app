@@ -21,7 +21,7 @@ class SeaweedFarmerHome extends StatelessWidget {
             children: [
               const SizedBox(height: 24),
               const Text(
-                'Offline Plot Recording',
+                'Rekamlah peternakan rumput laut Anda', //record your seaweed farm
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -29,7 +29,7 @@ class SeaweedFarmerHome extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               const Text(
-                'Record seaweed plot boundary points using GPS without relying on an online map.',
+                'Kelola dan pantau pertanian rumput laut Anda.', //manage and see your seaweed farms
               ),
               const SizedBox(height: 24),
               ElevatedButton.icon(
@@ -37,7 +37,7 @@ class SeaweedFarmerHome extends StatelessWidget {
                   context.push('/home/gps-test');
                 },
                 icon: const Icon(Icons.add_location_alt),
-                label: const Text('Open GPS Plot Recorder'),
+                label: const Text('Peternakan rumput laut baru'), //new seaweed farm
               ),
               const SizedBox(height: 12),
               ElevatedButton.icon(
@@ -45,7 +45,7 @@ class SeaweedFarmerHome extends StatelessWidget {
                   context.push('/home/plot-overview');
                 },
                 icon: const Icon(Icons.grid_view_outlined),
-                label: const Text('Plot Overview'),
+                label: const Text('Ladang rumput laut saya'), //my seaweed farms
               ),
               const SizedBox(height: 12),
               ElevatedButton.icon(
@@ -53,7 +53,7 @@ class SeaweedFarmerHome extends StatelessWidget {
                   context.push('/home/saved-plots');
                 },
                 icon: const Icon(Icons.task_alt),
-                label: const Text('Choose Plot For Form'),
+                label: const Text('Pilih peternakan rumput laut untuk memverifikasi'), //choose seaweed farm to verify
               ),
               if (Provider.of<AuthNotifier>(context, listen: false).isAdmin()) ...[ // added for security only admins and secretaries can access the verify plots page
               const SizedBox(height: 12),
