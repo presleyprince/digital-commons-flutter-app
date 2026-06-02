@@ -408,7 +408,7 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
                   color: Colors.grey.shade50,
                 ),
                 child: _recordedPoints.isEmpty
-                    ? const Center(child: Text('No preview yet'))
+                    ? const Center(child: Text('Tidak ada pratinjau')) //no preview
                     : ClipRRect(
                         borderRadius: BorderRadius.circular(12),
                         child: InteractiveViewer(

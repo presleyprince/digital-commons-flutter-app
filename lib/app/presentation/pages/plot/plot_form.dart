@@ -380,7 +380,7 @@ class _PlotFormPageState extends State<PlotFormPage> {
             TextFormField(
               controller: _ownerName,
               decoration: const InputDecoration(
-                labelText: 'Owner Name',
+                labelText: 'Nama pemilik', //owner name
               ),
               maxLength: 255,
               inputFormatters: [
@@ -404,7 +404,7 @@ class _PlotFormPageState extends State<PlotFormPage> {
             TextFormField(
               controller: _ownerAddress,
               decoration: const InputDecoration(
-                labelText: 'Owner Address [Street, Desa, Kecamatan, Kabupaten]',
+                labelText: 'Alamat pemilik [Street, Desa, Kecamatan, Kabupaten]', //owner address
               ),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
@@ -419,7 +419,7 @@ class _PlotFormPageState extends State<PlotFormPage> {
             TextFormField(
               controller: _ownershipStartDate,
               decoration: const InputDecoration(
-                labelText: 'Ownership Start Date',
+                labelText: 'Tanggal mulai kepemilikan', //Ownership Start Date
                 suffixIcon: Icon(Icons.calendar_today),
               ),
               readOnly: true,
@@ -446,7 +446,7 @@ class _PlotFormPageState extends State<PlotFormPage> {
 
             CheckboxListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('This plot has a previous owner'),
+              title: const Text('Pemilik sebelumnya?'), //previous owner?
               value: _hasPreviousOwner,
               tristate: false,
               onChanged: (value) {
@@ -465,7 +465,7 @@ class _PlotFormPageState extends State<PlotFormPage> {
               controller: _previousOwner,
               enabled: _hasPreviousOwner,
               decoration: const InputDecoration(
-                labelText: 'Previous Owner',
+                labelText: 'Nama pemilik sebelumnya', //previous owner name
               ),
               maxLength: 255,
               inputFormatters: [
@@ -491,7 +491,7 @@ class _PlotFormPageState extends State<PlotFormPage> {
                   ? null
                   : _ownershipThrough.text.trim(),
               decoration: const InputDecoration(
-                labelText: 'Ownership Through',
+                labelText: 'Kepemilikan melalui', //ownership through
               ),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
@@ -500,11 +500,11 @@ class _PlotFormPageState extends State<PlotFormPage> {
                 return null;
               },
               items: const [
-                DropdownMenuItem(value: 'Inherited', child: Text('Inherited')),
-                DropdownMenuItem(value: 'Purchased', child: Text('Purchased')),
-                DropdownMenuItem(value: 'Leased', child: Text('Leased')),
-                DropdownMenuItem(value: 'Gifted', child: Text('Gifted')),
-                DropdownMenuItem(value: 'Other', child: Text('Other')),
+                DropdownMenuItem(value: 'Inherited', child: Text('Diwariskan')),
+                DropdownMenuItem(value: 'Purchased', child: Text('Pembelian')),
+                DropdownMenuItem(value: 'Leased', child: Text('Disewakan')),
+                DropdownMenuItem(value: 'Gifted', child: Text('Hibah')), //grant/gift/donation formally 
+                DropdownMenuItem(value: 'Other', child: Text('Lainnya')),
               ],
               onChanged: (value) {
                 _ownershipThrough.text = value ?? '';
@@ -514,7 +514,7 @@ class _PlotFormPageState extends State<PlotFormPage> {
             const SizedBox(height: 16),
 
             CheckboxListTile(
-              title: const Text('I am the Operator'),
+              title: const Text('Saya adalah pengelola'), //I am the operator 
               value: _isSameAsOwner,
               tristate: false,
               onChanged: (value) {
