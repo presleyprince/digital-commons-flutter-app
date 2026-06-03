@@ -18,7 +18,7 @@ class VerifyPlotsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Verify Plots'),
+        title: const Text('Verifikasi Lahan'), //verify plots
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
@@ -28,7 +28,7 @@ class VerifyPlotsPage extends StatelessWidget {
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return Center(
-              child: Text('Error loading plots: ${snapshot.error}'),
+              child: Text('Gagal memuat lahan: ${snapshot.error}'), //error loading plots/farms
             );
           }
 
@@ -40,7 +40,7 @@ class VerifyPlotsPage extends StatelessWidget {
 
           if (plots.isEmpty) {
             return const Center(
-              child: Text('No plots are waiting for verification.'),
+              child: Text('Tidak ada lahan yang menunggu verifikasi.'), //no plots waiting for verification 
             );
           }
 
@@ -61,30 +61,30 @@ class VerifyPlotsPage extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        data['owner_name'] ?? 'Unknown owner',
+                        data['owner_name'] ?? 'Pemilik tidak diketahui', //unknown owner
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       const SizedBox(height: 6),
-                      Text('Address: ${data['owner_address'] ?? '-'}'),
-                      Text('Seaweed: ${data['type_of_seaweed'] ?? '-'}'),
-                      Text('Status: $status'),
+                      Text('Alamat: ${data['owner_address'] ?? '-'}'), //address
+                      Text('Rumput Laut: ${data['type_of_seaweed'] ?? '-'}'), //seaweed
+                      Text('Status: $status'), //status, same as english
                       const SizedBox(height: 12),
                       if (!isVerified)
                       Align(
                         alignment: Alignment.centerRight,
                         child: ElevatedButton.icon(
                           icon: const Icon(Icons.verified),
-                          label: const Text('Verify'),
+                          label: const Text('Verifikasi'), //verify
                           onPressed: () async {
                             await _verifyPlot(doc.id);
 
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content: Text('Plot verified'),
+                                  content: Text('Lahan terverifikasi'), //plot verified
                                 ),
                               );
                             }
@@ -95,7 +95,7 @@ class VerifyPlotsPage extends StatelessWidget {
                       const Align(
                         alignment: Alignment.centerRight,
                         child: Chip(
-                          label: Text('VERIFIED'),
+                          label: Text('TERVERIFIKASI'), //VERIFIED
                         ),
                       ),
                     ],

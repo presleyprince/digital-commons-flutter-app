@@ -34,7 +34,7 @@ class _SavedPlotDetailPageState extends State<SavedPlotDetailPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Saved Plot Details'),
+        title: const Text('Detail Lahan yang Disimpan'), //saved plot details
       ),
       body: FutureBuilder<SavedPlot?>(
         future: _plotFuture,
@@ -45,7 +45,7 @@ class _SavedPlotDetailPageState extends State<SavedPlotDetailPage> {
 
           final plot = snapshot.data;
           if (plot == null) {
-            return const Center(child: Text('Plot not found'));
+            return const Center(child: Text('Lahan tidak ditemukan')); //plot not found 
           }
 
           return SingleChildScrollView(
@@ -62,14 +62,14 @@ class _SavedPlotDetailPageState extends State<SavedPlotDetailPage> {
                         Text(plot.name, style: kTitle5TextStyle),
                         const SizedBox(height: 12),
                         Text(
-                          'Area: ${plot.areaSquareMeters.toStringAsFixed(2)} m^2',
+                          'Luas: ${plot.areaSquareMeters.toStringAsFixed(2)} m^2', //area
                         ),
                         const SizedBox(height: 8),
-                        Text('Vertices: ${plot.points.length}/4'),
+                        Text('Tiktik koordinat: ${plot.points.length}/4'), //verticies
                         const SizedBox(height: 8),
-                        Text('Created: ${dateFormat.format(plot.createdAt)}'),
+                        Text('Dibuat: ${dateFormat.format(plot.createdAt)}'), //creayed
                         const SizedBox(height: 8),
-                        Text('Updated: ${dateFormat.format(plot.updatedAt)}'),
+                        Text('Diperbarui: ${dateFormat.format(plot.updatedAt)}'), //updated
                         const SizedBox(height: 16),
                         SizedBox(
                           width: double.infinity,
@@ -84,7 +84,7 @@ class _SavedPlotDetailPageState extends State<SavedPlotDetailPage> {
                               });
                             },
                             icon: const Icon(Icons.description_outlined),
-                            label: const Text('Open Plot Form'),
+                            label: const Text('Buka Formulir Lahan'), //open plot form
                           ),
                         ),
                       ],
@@ -93,7 +93,7 @@ class _SavedPlotDetailPageState extends State<SavedPlotDetailPage> {
                 ),
                 const SizedBox(height: 16),
                 const Text(
-                  'Shape Preview',
+                  'Pratinjau Bentuk', //shape preview
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -127,7 +127,7 @@ class _SavedPlotDetailPageState extends State<SavedPlotDetailPage> {
                 ),
                 const SizedBox(height: 16),
                 const Text(
-                  'Recorded Point List',
+                  'Daftar Titik yang Direkam', //recorded point list
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -147,7 +147,7 @@ class _SavedPlotDetailPageState extends State<SavedPlotDetailPage> {
                         '${point.latitude.toStringAsFixed(6)}, ${point.longitude.toStringAsFixed(6)}',
                       ),
                       subtitle: Text(
-                        'Accuracy: ${point.accuracy.toStringAsFixed(2)} m',
+                        'Akurasi: ${point.accuracy.toStringAsFixed(2)} m', //accuracy
                       ),
                     );
                   },
