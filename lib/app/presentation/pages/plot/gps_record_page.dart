@@ -312,7 +312,7 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
             context.go('/home/seaweed-home');
           },
         ),
-        title: const Text('GPS Plot Recorder'),
+        title: const Text('Pemetaan Lahan'), //plot/farm mapping 
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
