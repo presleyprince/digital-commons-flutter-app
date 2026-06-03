@@ -57,15 +57,15 @@ class _SavedPlotsPageState extends State<SavedPlotsPage> {
       builder: (context) {
         return AlertDialog(
           title: const Text('Delete plot?'),
-          content: Text('Delete ${plot.name}? This cannot be undone.'),
+          content: Text('Hapus ${plot.name}? Tindakan ini tidak dapat dibatalkan.'), //Delete ${plot.name}? This cannot be undone.
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Cancel'),
+              child: const Text('Batal'),//cancel
             ),
             FilledButton(
               onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Delete'),
+              child: const Text('Hapus'), //delete
             ),
           ],
         );
@@ -83,7 +83,7 @@ class _SavedPlotsPageState extends State<SavedPlotsPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Saved Plots'),
+        title: const Text('Lahan yang Disimpan'), //saved plots
       ),
       body: FutureBuilder<List<SavedPlot>>(
         future: _plotsFuture,
@@ -98,7 +98,7 @@ class _SavedPlotsPageState extends State<SavedPlotsPage> {
               child: Padding(
                 padding: EdgeInsets.all(24),
                 child: Text(
-                  'No saved plots yet.\nRecord and save a plot first.',
+                  'Belum ada lahan yang disimpan.\nRekam dan simpan lahan terlebih dahulu.', //No saved plots yet.\nRecord and save a plot first.
                   textAlign: TextAlign.center,
                 ),
               ),

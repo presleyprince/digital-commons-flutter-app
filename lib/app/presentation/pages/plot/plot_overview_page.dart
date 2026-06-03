@@ -82,7 +82,7 @@ class _PlotOverviewPageState extends State<PlotOverviewPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Plot Overview'),
+        title: const Text('Daftar Lahan Rumput Laut'), //list of seaweed farms
       ),
       body: FutureBuilder<List<SavedPlot>>(
         future: _plotsFuture,
@@ -97,7 +97,7 @@ class _PlotOverviewPageState extends State<PlotOverviewPage> {
               child: Padding(
                 padding: EdgeInsets.all(24),
                 child: Text(
-                  'No saved plots yet.\nRecord and save a plot first.',
+                  'Belum ada lahan yang disimpan.\nRekam dan simpan lahan terlebih dahulu.', //no saved plots, record and save a plot first
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -116,15 +116,15 @@ class _PlotOverviewPageState extends State<PlotOverviewPage> {
                   children: [
                     _LegendChip(
                       color: Colors.orange.shade300,
-                      label: 'Not submitted',
+                      label: 'Belum dikirim', //not submitted
                     ),
                     _LegendChip(
                       color: Colors.green.shade300,
-                      label: 'Submitted',
+                      label: 'Dikirim ', //submitted
                     ),
                     const _LegendChip(
                       color: Colors.white,
-                      label: 'Tap a plot to open details',
+                      label: 'Ketuk lahan untuk melihat detail ', //tap land to see details 
                       borderColor: Colors.black26,
                     ),
                   ],
