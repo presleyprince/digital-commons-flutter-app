@@ -539,7 +539,7 @@ class _PlotFormPageState extends State<PlotFormPage> {
               controller: _operatorName,
               enabled: !_isSameAsOwner,
               decoration: const InputDecoration(
-                labelText: 'Operator Name (same as owner if not leased/shared)',
+                labelText: 'Nama pengelola (sama dengan pemilik jika tidak disewa/bagi hasil)', //operator name (same as owner if not leased/shared)
               ),
               maxLength: 255,
               inputFormatters: [
@@ -570,7 +570,7 @@ class _PlotFormPageState extends State<PlotFormPage> {
                 return null;
               },
               decoration: const InputDecoration(
-                labelText: 'Operator Address [Street, Desa, Kecamatan, Kabupaten]',
+                labelText: 'Alamat pengelola [Street, Desa, Kecamatan, Kabupaten]', //operator address
               ),
             ),
 
@@ -588,7 +588,7 @@ class _PlotFormPageState extends State<PlotFormPage> {
                 return null;
               },
               decoration: const InputDecoration(
-                labelText: 'Lease Period',
+                labelText: 'Periode sewa', //lease period
               ),
             ),
 
@@ -597,7 +597,7 @@ class _PlotFormPageState extends State<PlotFormPage> {
             if (!_isSameAsOwner) ...[
               CheckboxListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('This operator uses a lease arrangement'),
+                title: const Text('Pengelola ini menggunakan perjanjian sewa.'), //this operator uses a lease arrangement
                 value: _isLeasedOperator,
                 tristate: false,
                 onChanged: (value) {
@@ -621,7 +621,7 @@ class _PlotFormPageState extends State<PlotFormPage> {
                 return null;
               },
               decoration: const InputDecoration(
-                labelText: 'Type of Seaweed Planted in the Last 1 Year',
+                labelText: 'Jenis Rumput Laut yang Ditanam dalam 1 Tahun Terakhir', //Type of Seaweed Planted in the Last 1 Year
               ),
             ),
 
@@ -636,7 +636,7 @@ class _PlotFormPageState extends State<PlotFormPage> {
                 return null;
               },
               decoration: const InputDecoration(
-                labelText: 'Planting Cycle Per Year',
+                labelText: 'Siklus Tanam Per Tahun', //planting cycle per year
               ),
               keyboardType: TextInputType.number,
             ),
@@ -652,7 +652,7 @@ class _PlotFormPageState extends State<PlotFormPage> {
                 return null;
               },
               decoration: const InputDecoration(
-                labelText: 'Production Capacity Per Planting Cycle (kg)',
+                labelText: 'Kapasitas Produksi Per Siklus Tanam (kg)', //Production Capacity Per Planting Cycle (kg)
               ),
               keyboardType: TextInputType.number,
             ),
@@ -668,7 +668,7 @@ class _PlotFormPageState extends State<PlotFormPage> {
                 return null;
               },
               decoration: const InputDecoration(
-                labelText: 'Adjacent Plot Owners',
+                labelText: 'Pemilik Lahan yang Berbatasan', //Owners of bordering land
               ),
             ),
 
@@ -677,7 +677,7 @@ class _PlotFormPageState extends State<PlotFormPage> {
             TextFormField(
               controller: _adjacentPlotOwners2,
               decoration: const InputDecoration(
-                labelText: 'Adjacent Plot Owners',
+                labelText: 'Pemilik Lahan yang Berbatasan', //Owners of bordering land
               ),
             ),
 
@@ -686,7 +686,7 @@ class _PlotFormPageState extends State<PlotFormPage> {
             TextFormField(
               controller: _adjacentPlotOwners3,
               decoration: const InputDecoration(
-                labelText: 'Adjacent Plot Owners',
+                labelText: 'Pemilik Lahan yang Berbatasan', //Owners of bordering land
               ),
             ),
 
@@ -695,7 +695,7 @@ class _PlotFormPageState extends State<PlotFormPage> {
             TextFormField(
               controller: _adjacentPlotOwners4,
               decoration: const InputDecoration(
-                labelText: 'Adjacent Plot Owners',
+                labelText: 'Pemilik Lahan yang Berbatasan', //Owners of bordering land
               ),
             ),
   
@@ -711,14 +711,14 @@ class _PlotFormPageState extends State<PlotFormPage> {
                               showFeedback: true,
                               requireValidation: false,
                             ),
-                    child: Text(_isSaving ? 'Saving...' : 'Save'),
+                    child: Text(_isSaving ? 'Menyimpan...' : 'Simpan'), //saving, save
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: ElevatedButton(
                     onPressed: _isSaving ? null : _submit,
-                    child: Text(_isSaving ? 'Submitting...' : 'Submit'),
+                    child: Text(_isSaving ? 'Mengirim...' : 'Kirim'), //submitting, submit
                   ),
                 ),
               ],
