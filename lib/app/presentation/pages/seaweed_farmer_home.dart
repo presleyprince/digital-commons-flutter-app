@@ -62,7 +62,7 @@ class SeaweedFarmerHome extends StatelessWidget {
                   context.push('/verify-plots');
                 },
                 icon: const Icon(Icons.verified_user),
-                label: const Text('Verify Plots'),
+                label: const Text('Verifikasi Lahan'), //verify plots
               ),
             ],
             ],
