@@ -82,7 +82,7 @@ class _PlotOverviewPageState extends State<PlotOverviewPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Daftar Lahan Rumput Laut'), //list of seaweed farms
+        title: const Text('Daftar LahanKu'),
       ),
       body: FutureBuilder<List<SavedPlot>>(
         future: _plotsFuture,

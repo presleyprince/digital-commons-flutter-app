@@ -191,7 +191,7 @@ class _PlotFormPageState extends State<PlotFormPage> {
   Future<void> _submit() async {
     if (_plot == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Plot not found')),
+        const SnackBar(content: Text('Lahan tidak ditemukan')),
       );
       return;
     }
@@ -327,7 +327,7 @@ class _PlotFormPageState extends State<PlotFormPage> {
     if (_isLoading) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text('Plot Form'),
+          title: const Text('Formulir Lahan'),
         ),
         body: const Center(child: CircularProgressIndicator()),
       );
@@ -336,15 +336,15 @@ class _PlotFormPageState extends State<PlotFormPage> {
     if (_plot == null) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text('Plot Form'),
+          title: const Text('Formulir Lahan'),
         ),
-        body: const Center(child: Text('Plot not found')),
+        body: const Center(child: Text('Lahan tidak ditemukan')),
       );
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Plot Form'),
+        title: const Text('Formulir Lahan'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),

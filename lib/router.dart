@@ -72,7 +72,7 @@ final router = GoRouter(
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) {
         // main page will have navbar
-        if (state.fullPath == '/home' || state.fullPath == '/my-plot' ||
+        if (state.fullPath == '/home' || state.fullPath == '/seaweed-home' ||
             state.fullPath == '/my-finance' || state.fullPath == '/information' ||
             state.fullPath == '/profile') {
           return ScaffoldWithNavBar(navigationShell: navigationShell);
@@ -208,8 +208,8 @@ final router = GoRouter(
         StatefulShellBranch(
           routes: [
             GoRoute(
-              path: '/my-plot',
-              builder: (context, state) => const MyPlotPage(),
+              path: '/seaweed-home',
+              builder: (context, state) => const SeaweedFarmerHome(),
               ),
             ],
           ),
