@@ -207,8 +207,8 @@ class _PlotOverviewPageState extends State<PlotOverviewPage> {
                                   const SizedBox(height: 4),
                                   Text(
                                     item.plot.isSynced
-                                        ? 'Submitted'
-                                        : 'Not submitted',
+                                        ? 'Dikirim' // submitted
+                                        : 'Belum dikirim', //not submitted
                                     style: TextStyle(
                                       fontSize: 12,
                                       color: item.plot.isSynced
@@ -221,7 +221,7 @@ class _PlotOverviewPageState extends State<PlotOverviewPage> {
                             ),
                           ),
                           IconButton(
-                            tooltip: 'Open details',
+                            tooltip: 'Lihat detail', //see detail
                             onPressed: () {
                               context.push(
                                 '/home/saved-plots/${item.plot.id}',
@@ -289,7 +289,7 @@ class _PlotOverviewPageState extends State<PlotOverviewPage> {
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        'Showing ${plots.length} saved plots from local storage.',
+                        'Menampilkan ${plots.length} lahan yang disimpan dari penyimpanan lokal.', //Showing X saved plots from local storage.
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                     ],

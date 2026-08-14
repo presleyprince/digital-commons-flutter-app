@@ -172,7 +172,7 @@ class _PlotFormPageState extends State<PlotFormPage> {
       });
       if (showFeedback) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Form saved locally')),
+          const SnackBar(content: Text('Formulir berhasil disimpan secara lokal')), //form saved locally
         );
       }
     } catch (e) {
@@ -183,7 +183,7 @@ class _PlotFormPageState extends State<PlotFormPage> {
         _isSaving = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error saving form locally: $e')),
+        SnackBar(content: Text('Gagal menyimpan formulir secara lokal: $e')), //error saving form locally
       );
     }
   }
@@ -202,7 +202,7 @@ class _PlotFormPageState extends State<PlotFormPage> {
         return;
       }
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('User ID not found. Please log in again.')),
+        const SnackBar(content: Text('ID Pengguna tidak ditemukan. Silakan masuk kembali.')), //user ID not found, please log in again
       );
       return;
     }
@@ -307,7 +307,7 @@ class _PlotFormPageState extends State<PlotFormPage> {
         _isSaving = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Plot and form submitted successfully')),
+        const SnackBar(content: Text('Lahan dan formulir berhasil dikirim')), //plot and form submitted successfully
       );
     } catch (e) {
       if (!mounted) {
@@ -317,7 +317,7 @@ class _PlotFormPageState extends State<PlotFormPage> {
         _isSaving = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error submitting form: $e')),
+        SnackBar(content: Text('Gagal mengirim formulir: $e')), //error submitting form
       );
     }
   }
@@ -361,15 +361,15 @@ class _PlotFormPageState extends State<PlotFormPage> {
                   children: [
                     Text(_plot!.name, style: Theme.of(context).textTheme.titleMedium),
                     const SizedBox(height: 8),
-                    Text('Area: ${_plot!.areaSquareMeters.toStringAsFixed(2)} m^2'),
+                    Text('Luas: ${_plot!.areaSquareMeters.toStringAsFixed(2)} m^2'), //area
                     const SizedBox(height: 8),
-                    Text('Vertices: ${_plot!.points.length}/4'),
+                    Text('Tikik koordinat: ${_plot!.points.length}/4'), //verticies
                     if (_savedForm != null) ...[
                       const SizedBox(height: 8),
                       Text(
                         _savedForm!.isSynced
-                            ? 'Local status: synced'
-                            : 'Local status: saved offline',
+                            ? 'Status lokal: tersinkronisasi' //local status, synced
+                            : 'Status lokal: disimpan offline', //local status, saved offline
                       ),
                     ],
                   ],
@@ -388,7 +388,7 @@ class _PlotFormPageState extends State<PlotFormPage> {
               ],
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
-                  return 'Owner Name is required';
+                  return 'Nama Pemilik wajib diisi'; //owner name required
                 }
                 return null;
               },
@@ -408,7 +408,7 @@ class _PlotFormPageState extends State<PlotFormPage> {
               ),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
-                  return 'Owner Address is required';
+                  return 'Alamat pemilik wajib diisi';
                 }
                 return null;
               },
@@ -425,7 +425,7 @@ class _PlotFormPageState extends State<PlotFormPage> {
               readOnly: true,
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
-                  return 'Ownership Start Date is required';
+                  return 'Tanggal mulai kepemilikan wajib diisi'; //required
                 }
                 return null;
               },
@@ -473,7 +473,7 @@ class _PlotFormPageState extends State<PlotFormPage> {
               ],
               validator: (value) {
                 if (_hasPreviousOwner && (value == null || value.trim().isEmpty)) {
-                  return 'Previous Owner is required';
+                  return 'Pemilik sebelumnya wajib diisi'; //required
                 }
                 return null;
               },
@@ -495,7 +495,7 @@ class _PlotFormPageState extends State<PlotFormPage> {
               ),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
-                  return 'Owner Through is required';
+                  return 'Asal-usul Kepemilikan wajib diisi'; //pwnership required
                 }
                 return null;
               },
@@ -547,7 +547,7 @@ class _PlotFormPageState extends State<PlotFormPage> {
               ],
               validator: (value) {
                 if (!_isSameAsOwner && (value == null || value.trim().isEmpty)) {
-                  return 'Operator Name is required';
+                  return 'Nama pengelola wajib diisi'; //required
                 }
                 return null;
               },
@@ -565,7 +565,7 @@ class _PlotFormPageState extends State<PlotFormPage> {
               enabled: !_isSameAsOwner,
               validator: (value) {
                 if (!_isSameAsOwner && (value == null || value.trim().isEmpty)) {
-                  return 'Operator Address is required';
+                  return 'Alamat pengelola wajib diisi'; //required
                 }
                 return null;
               },
@@ -583,7 +583,7 @@ class _PlotFormPageState extends State<PlotFormPage> {
                 if (!_isSameAsOwner &&
                     _isLeasedOperator &&
                     (value == null || value.trim().isEmpty)) {
-                  return 'Lease Period is required';
+                  return 'Jangka waktu sewa wajib diisi'; //required
                 }
                 return null;
               },
@@ -616,7 +616,7 @@ class _PlotFormPageState extends State<PlotFormPage> {
               controller: _typeOfSeaweed,
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
-                  return 'Type of Seaweed is required';
+                  return 'Jenis Rumput Laut wajib diisi'; //required
                 }
                 return null;
               },
@@ -631,7 +631,7 @@ class _PlotFormPageState extends State<PlotFormPage> {
               controller: _plantingCycle,
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
-                  return 'Planting Cycle is required';
+                  return 'Siklus Tanam wajib diisi';
                 }
                 return null;
               },
@@ -647,7 +647,7 @@ class _PlotFormPageState extends State<PlotFormPage> {
               controller: _productionCapacity,
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
-                  return 'Production Capacity is required';
+                  return 'Kapasitas Produksi wajib diisi';
                 }
                 return null;
               },
@@ -663,7 +663,7 @@ class _PlotFormPageState extends State<PlotFormPage> {
               controller: _adjacentPlotOwners1,
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
-                  return 'At least 1 Adjacent Plot Owner is required';
+                  return 'Minimal wajib mengisi 1 Pemilik Lahan Sekitar';
                 }
                 return null;
               },

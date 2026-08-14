@@ -26,7 +26,7 @@ class _SavedPlotsPageState extends State<SavedPlotsPage> {
   }
 
   String _statusLabel(bool isSynced) {
-    return isSynced ? 'Submitted' : 'Not submitted';
+    return isSynced ? 'Dikirim' : 'Belum dikirim'; //submitted/ not submitted
   }
 
   @override
@@ -46,7 +46,7 @@ class _SavedPlotsPageState extends State<SavedPlotsPage> {
     if (!mounted) return;
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${plot.name} deleted')),
+      SnackBar(content: Text('${plot.name} dihapus')), //deleted
     );
     await _refreshPlots();
   }
@@ -56,7 +56,7 @@ class _SavedPlotsPageState extends State<SavedPlotsPage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Delete plot?'),
+          title: const Text('Hapus lahan?'), //delete plot?
           content: Text('Hapus ${plot.name}? Tindakan ini tidak dapat dibatalkan.'), //Delete ${plot.name}? This cannot be undone.
           actions: [
             TextButton(
@@ -147,9 +147,9 @@ class _SavedPlotsPageState extends State<SavedPlotsPage> {
                       ],
                     ),
                     subtitle: Text(
-                      'Area: ${plot.areaSquareMeters.toStringAsFixed(2)} m^2\n'
-                      'Updated: ${dateFormat.format(plot.updatedAt)}\n'
-                      'Vertices: ${plot.points.length}/4',
+                      'Luas: ${plot.areaSquareMeters.toStringAsFixed(2)} m^2\n' //area
+                      'Diperbarui : ${dateFormat.format(plot.updatedAt)}\n' //Updated
+                      'Titik koordinat: ${plot.points.length}/4', //Vertices
                     ),
                     isThreeLine: true,
                     trailing: IconButton(

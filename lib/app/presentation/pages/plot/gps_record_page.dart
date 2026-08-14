@@ -40,7 +40,7 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
 
     setState(() {
       _isLoading = true;
-      _statusText = 'Checking location service...';
+      _statusText = 'Memeriksa layanan lokasi...'; //checking location services
     });
 
     try {
@@ -48,7 +48,7 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
       if (!serviceEnabled) {
         setState(() {
           _isLoading = false;
-          _statusText = 'Location service is disabled';
+          _statusText = 'Layanan lokasi mati'; //location service is off
         });
         return null;
       }
@@ -61,7 +61,7 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
       if (permission == LocationPermission.denied) {
         setState(() {
           _isLoading = false;
-          _statusText = 'Location permission denied';
+          _statusText = 'Akses izin lokasi ditolak'; //location access permission denied
         });
         return null;
       }
@@ -70,13 +70,13 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
         setState(() {
           _isLoading = false;
           _statusText =
-              'Location permission permanently denied. Enable it in system settings';
+              'Izin lokasi ditolak secara permanen. Aktifkan di pengaturan sistem.'; //Location permission permanently denied. Enable it in system settings
         });
         return null;
       }
 
       setState(() {
-        _statusText = 'Fetching current location...';
+        _statusText = 'Mengambil lokasi saat ini...'; //fetching current location 
       });
 
       final position = await Geolocator.getCurrentPosition(
@@ -89,14 +89,14 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
         _currentPosition = position;
         _isLoading = false;
         _statusText = position.accuracy <= 10
-            ? 'Location fetched. Accuracy is good'
-            : 'Location fetched, but accuracy is not stable yet';
+            ? 'Lokasi berhasil diambil. Akurasi bagus' //Location fetched. Accuracy is good
+            : 'Lokasi berhasil diambil, tetapi akurasi belum stabil'; //Location fetched, but accuracy is not stable yet
       });
       return position;
     } catch (e) {
       setState(() {
         _isLoading = false;
-        _statusText = 'Failed to get location: $e';
+        _statusText = 'Gagal mendapatkan lokasi: $e'; //failed to get location
       });
       return null;
     }
@@ -105,8 +105,8 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
   Future<void> _recordCurrentPoint() async {
     if (_recordedPoints.length >= PlotGeometry.requiredPointCount) {
       _showAlertDialog(
-        title: 'Maximum points reached',
-        message: 'Quadrilateral plots must contain exactly 4 points.',
+        title: 'Batas maksimum titik tercapai', //max point limit reached
+        message: 'Lahan segiempat harus memiliki tepat 4 titik.', //Quadrilateral plots must contain exactly 4 points
       );
       return;
     }
@@ -121,7 +121,7 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
       currentPosition: position,
     )) {
       setState(() {
-        _statusText = 'Current location is too close to the last recorded point';
+        _statusText = 'Lokasi saat ini terlalu dekat dengan titik terakhir yang direkam.'; //Current location is too close to the last recorded point
       });
       return;
     }
@@ -136,30 +136,30 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
     setState(() {
       _recordedPoints.add(point);
       _statusText = _recordedPoints.length == PlotGeometry.requiredPointCount
-          ? 'Point 4 recorded. Plot is ready to save'
-          : 'Point ${_recordedPoints.length} recorded';
+          ? 'Titik 4 direkam. Lahan siap disimpan' //Point 4 recorded. Plot is ready to save
+          : 'Titik ${_recordedPoints.length} direkam'; //Point ${_recordedPoints.length} recorded
     });
   }
 
   void _undoLastPoint() {
     if (_recordedPoints.isEmpty) {
       setState(() {
-        _statusText = 'No point to undo';
+        _statusText = 'Tidak ada titik yang dapat dibatalkan'; //no point to undo
       });
       return;
     }
 
     setState(() {
       _recordedPoints.removeLast();
-      _statusText = 'Last point removed';
+      _statusText = 'Titik terakhir dihapus'; //last point removed
     });
   }
 
   Future<void> _savePlot() async {
     if (_recordedPoints.length != PlotGeometry.requiredPointCount) {
       await _showAlertDialog(
-        title: 'Unable to save plot',
-        message: 'Only quadrilateral plots with exactly 4 points can be saved.',
+        title: 'Gagal menyimpan lahan', //unable to save plots
+        message: 'Hanya lahan segiempat dengan tepat 4 titik yang dapat disimpan.', //Only quadrilateral plots with exactly 4 points can be saved.
       );
       return;
     }
@@ -171,7 +171,7 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
     final timestamp = DateFormat('yyyy-MM-dd HH:mm').format(now);
     final trimmedName = customName.trim();
     final plotName =
-        trimmedName.isEmpty ? 'Plot $timestamp' : '$trimmedName - $timestamp';
+        trimmedName.isEmpty ? 'Lahan $timestamp' : '$trimmedName - $timestamp';
 
     final plot = SavedPlot(
       id: _uuid.v4(),
@@ -197,21 +197,21 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
       setState(() {
         _isSaving = false;
         _recordedPoints.clear();
-        _statusText = '${plot.name} saved successfully';
+        _statusText = '${plot.name} berhasil disimpan'; //saved successfully
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${plot.name} saved')),
+        SnackBar(content: Text('${plot.name} disimpan')), //saved
       );
     } catch (e) {
       if (!mounted) return;
       setState(() {
         _isSaving = false;
-        _statusText = 'Failed to save plot: $e';
+        _statusText = 'Gagal menyimpan lahan: $e'; //failed to save plot
       });
       await _showAlertDialog(
-        title: 'Failed to save plot',
-        message: 'An error occurred while saving this plot.\n\n$e',
+        title: 'Gagal menyimpan lahan:', //failed to save plot
+        message: 'Terjadi kesalahan saat menyimpan lahan ini.\n\n$e', //error occurred while saving this plot
       );
     }
   }
@@ -223,34 +223,34 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Save Plot'),
+          title: const Text('Simpan Lahan'), //save plot
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Enter a plot name or skip to use an automatic name.'),
+              const Text('Masukkan nama lahan atau lewati untuk menggunakan nama otomatis.'), //enter plot name or skip for automatic name
               const SizedBox(height: 12),
               TextField(
                 controller: controller,
                 decoration: const InputDecoration(
-                  labelText: 'Plot name',
-                  hintText: 'Optional',
+                  labelText: 'Nama lahan', //plot name
+                  hintText: 'Opsional', //optional
                 ),
               ),
             ],
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(null),
-              child: const Text('Cancel'),
+              onPressed: () => Navigator.of(context).pop(null), 
+              child: const Text('Batal'), //cancel
             ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(''),
-              child: const Text('Skip'),
+              child: const Text('Lewati'), //skip
             ),
             FilledButton(
               onPressed: () => Navigator.of(context).pop(controller.text),
-              child: const Text('Save'),
+              child: const Text('Simpan Lahan'), //save farm
             ),
           ],
         );
@@ -402,8 +402,8 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
                     const SizedBox(height: 8),
                     Text(
                       _recordedPoints.length < PlotGeometry.requiredPointCount
-                          ? 'Preview mode: points and polyline'
-                          : 'Preview mode: polygon',
+                          ? 'Mode pratinjau: titik dan garis tepi' //Preview mode: points and polyline/border lines
+                          : 'Mode pratinjau: poligon', //Preview mode: polygon
                     ),
                     const SizedBox(height: 8),
                     Text(
@@ -503,7 +503,7 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
                           '${point.latitude.toStringAsFixed(6)}, ${point.longitude.toStringAsFixed(6)}',
                         ),
                         subtitle: Text(
-                          'Accuracy: ${point.accuracy.toStringAsFixed(2)} m',
+                          'Akurasi: ${point.accuracy.toStringAsFixed(2)} m', //accuracy
                         ),
                       );
                     },
