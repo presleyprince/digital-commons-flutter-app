@@ -18,7 +18,7 @@ class VerifyPlotsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Verifikasi Lahan'), //verify plots
+        title: const Text('Verifikasi Lahan'),
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
@@ -40,7 +40,7 @@ class VerifyPlotsPage extends StatelessWidget {
 
           if (plots.isEmpty) {
             return const Center(
-              child: Text('Tidak ada lahan yang menunggu verifikasi.'), //no plots waiting for verification 
+              child: Text('Tidak ada lahan yang menunggu verifikasi.'),
             );
           }
 
@@ -77,14 +77,14 @@ class VerifyPlotsPage extends StatelessWidget {
                         alignment: Alignment.centerRight,
                         child: ElevatedButton.icon(
                           icon: const Icon(Icons.verified),
-                          label: const Text('Verifikasi'), //verify
+                          label: const Text('Verifikasi'),
                           onPressed: () async {
                             await _verifyPlot(doc.id);
 
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content: Text('Lahan terverifikasi'), //plot verified
+                                  content: Text('Lahan berhasil diverifikasi'),
                                 ),
                               );
                             }

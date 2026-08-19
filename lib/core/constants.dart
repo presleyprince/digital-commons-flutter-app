@@ -50,7 +50,7 @@ final List<HomeMenu> kHomeMenu = [
   HomeMenu(
     image: R.ASSETS_ICONS_MY_PLOT_PNG,
     title: 'LahanKu',
-    route: 'my-plot',
+    route: 'seaweed-home',
   ),
   HomeMenu(
     image: R.ASSETS_ICONS_MY_FINANCIAL_PNG,
@@ -59,8 +59,8 @@ final List<HomeMenu> kHomeMenu = [
   ),
   HomeMenu(
     image: R.ASSETS_ICONS_SEAWEED_HOME_PNG, // need to update icon
-    title: 'Rumput Laut', 
-    route: 'seaweed-home',
+    title: 'Rumput Laut',
+    route: 'my-plot',
   ),
   // removed Cuaca, now a widget
 ];

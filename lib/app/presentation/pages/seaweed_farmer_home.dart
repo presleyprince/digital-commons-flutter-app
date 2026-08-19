@@ -11,7 +11,7 @@ class SeaweedFarmerHome extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Rumput Laut'),
+        title: const Text('LahanKu'),
       ),
       body: SafeArea(
         child: Padding(
@@ -21,7 +21,7 @@ class SeaweedFarmerHome extends StatelessWidget {
             children: [
               const SizedBox(height: 24),
               const Text(
-                'Rekamlah peternakan rumput laut Anda', //record your seaweed farm
+                'Rekam dan kelola lahan Anda',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -29,7 +29,7 @@ class SeaweedFarmerHome extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               const Text(
-                'Kelola dan pantau pertanian rumput laut Anda.', //manage and see your seaweed farms
+                'Kelola dan pantau data lahan Anda.',
               ),
               const SizedBox(height: 24),
               ElevatedButton.icon(
@@ -37,7 +37,7 @@ class SeaweedFarmerHome extends StatelessWidget {
                   context.push('/home/gps-test');
                 },
                 icon: const Icon(Icons.add_location_alt),
-                label: const Text('Peternakan rumput laut baru'), //new seaweed farm
+                label: const Text('Lahan baru'),
               ),
               const SizedBox(height: 12),
               ElevatedButton.icon(
@@ -45,7 +45,7 @@ class SeaweedFarmerHome extends StatelessWidget {
                   context.push('/home/plot-overview');
                 },
                 icon: const Icon(Icons.grid_view_outlined),
-                label: const Text('Ladang rumput laut saya'), //my seaweed farms
+                label: const Text('Lahan saya'),
               ),
               const SizedBox(height: 12),
               ElevatedButton.icon(
@@ -53,7 +53,7 @@ class SeaweedFarmerHome extends StatelessWidget {
                   context.push('/home/saved-plots');
                 },
                 icon: const Icon(Icons.task_alt),
-                label: const Text('Pilih peternakan rumput laut untuk memverifikasi'), //choose seaweed farm to verify
+                label: const Text('Pilih lahan untuk memverifikasi'),
               ),
               if (Provider.of<AuthNotifier>(context, listen: false).isAdmin()) ...[ // added for security only admins and secretaries can access the verify plots page
               const SizedBox(height: 12),
@@ -62,7 +62,7 @@ class SeaweedFarmerHome extends StatelessWidget {
                   context.push('/verify-plots');
                 },
                 icon: const Icon(Icons.verified_user),
-                label: const Text('Verifikasi Lahan'), //verify plots
+                label: const Text('Verifikasi Lahan'),
               ),
             ],
             ],
