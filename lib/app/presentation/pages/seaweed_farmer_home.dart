@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:digital_shores/core/constants.dart';
 import 'package:go_router/go_router.dart';
-import 'package:digital_shores/app/presentation/provider/auth_notifier.dart'; // added to ensure only admins/secretaries ccan access the page
+import 'package:digital_shores/app/presentation/provider/auth_notifier.dart';
 import 'package:provider/provider.dart';
 
 class SeaweedFarmerHome extends StatelessWidget {
@@ -9,38 +9,36 @@ class SeaweedFarmerHome extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // check if the current user is an admin? (used below to decide whether to show the 4th tile)
     final isAdmin =
-        Provider.of<AuthNotifier>(context, listen: false).isAdmin();
+    Provider.of<AuthNotifier>(context, listen: false).isAdmin();
 
-    // GRID style instead, to match the home page (one is hidden for admin)
     final tiles = <_SeaweedMenuItem>[
       _SeaweedMenuItem(
         icon: Icons.add_location_alt,
-        label: 'Peternakan rumput laut baru', // new seaweed farm
+        label: 'Lahan baru',
         onTap: () => context.push('/home/gps-test'),
       ),
       _SeaweedMenuItem(
         icon: Icons.grid_view_outlined,
-        label: 'Ladang rumput laut saya', // my seaweed farms
+        label: 'Lahan saya',
         onTap: () => context.push('/home/plot-overview'),
       ),
       _SeaweedMenuItem(
         icon: Icons.task_alt,
-        label: 'Pilih peternakan rumput laut untuk memverifikasi', // choose seaweed farm to verify
+        label: 'Pilih lahan untuk memverifikasi',
         onTap: () => context.push('/home/saved-plots'),
       ),
-      if (isAdmin) // only admins/secretaries see this tile
+      if (isAdmin)
         _SeaweedMenuItem(
           icon: Icons.verified_user,
-          label: 'Verifikasi Lahan', // verify plots
+          label: 'Verifikasi Lahan',
           onTap: () => context.push('/verify-plots'),
         ),
     ];
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Rumput Laut'),
+        title: const Text('LahanKu'),
       ),
       body: SafeArea(
         child: Padding(
@@ -50,35 +48,30 @@ class SeaweedFarmerHome extends StatelessWidget {
             children: [
               const SizedBox(height: 24),
               const Text(
-                'Rekamlah peternakan rumput laut Anda', //record your seaweed farm
+                'Rekam dan kelola lahan Anda',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
-                'Kelola dan pantau pertanian rumput laut Anda.', //manage and see your seaweed farms
-              ),
+              const Text('Kelola dan pantau data lahan Anda.'),
               const SizedBox(height: 24),
-
-              // Grid Buttons
               GridView.builder(
-                shrinkWrap: true, // grid will size itself to its content
-                physics: const NeverScrollableScrollPhysics(), // page already scrolls if needed
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
                 itemCount: tiles.length,
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2, // 1 tile per row
+                  crossAxisCount: 2,
                   crossAxisSpacing: 12,
                   mainAxisSpacing: 12,
-                  childAspectRatio: 0.95, 
+                  childAspectRatio: 0.95,
                 ),
                 itemBuilder: (context, index) {
                   final tile = tiles[index];
                   return _SeaweedMenuTile(item: tile);
                 },
               ),
-              //
             ],
           ),
         ),
@@ -87,7 +80,6 @@ class SeaweedFarmerHome extends StatelessWidget {
   }
 }
 
-///  what icon+text to show, and what to do when it's tapped.
 class _SeaweedMenuItem {
   const _SeaweedMenuItem({
     required this.icon,
@@ -100,7 +92,6 @@ class _SeaweedMenuItem {
   final VoidCallback onTap;
 }
 
-/// a colored circle with an icon, and a label below it.
 class _SeaweedMenuTile extends StatelessWidget {
   const _SeaweedMenuTile({required this.item});
 

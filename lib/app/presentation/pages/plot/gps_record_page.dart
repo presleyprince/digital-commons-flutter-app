@@ -22,17 +22,20 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
 
   bool _isLoading = false;
   bool _isSaving = false;
+  bool _isLeaving = false;
   String _statusText = 'Belum ada lokasi'; //no location yet
   Position? _currentPosition;
   final List<PlotPoint> _recordedPoints = [];
 
-  Future<void> _getCurrentLocation() async {
+  bool get _hasUnsavedPoints => _recordedPoints.isNotEmpty;
+
+  Future<Position?> _getCurrentLocation() async {
     if (_recordedPoints.length >= PlotGeometry.requiredPointCount) {
       await _showAlertDialog(
-        title: 'Lahan sudah selesai', //farm plot is already complete
-        message: 'Lahan ini sudah memiliki 4 titik. Simpan atau hapus titik terlebih dahulu sebelum mengambil lokasi lain.', //This plot already has 4 points. Save it or clear points before getting another location.
+        title: 'Plot already complete',
+        message: 'This plot already has 4 points. Save it or use Ulang before recording another location.',
       );
-      return;
+      return null;
     }
 
     setState(() {
@@ -47,7 +50,7 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
           _isLoading = false;
           _statusText = 'Layanan lokasi mati'; //location service is off
         });
-        return;
+        return null;
       }
 
       var permission = await Geolocator.checkPermission();
@@ -60,7 +63,7 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
           _isLoading = false;
           _statusText = 'Akses izin lokasi ditolak'; //location access permission denied
         });
-        return;
+        return null;
       }
 
       if (permission == LocationPermission.deniedForever) {
@@ -69,7 +72,7 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
           _statusText =
               'Izin lokasi ditolak secara permanen. Aktifkan di pengaturan sistem.'; //Location permission permanently denied. Enable it in system settings
         });
-        return;
+        return null;
       }
 
       setState(() {
@@ -89,22 +92,17 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
             ? 'Lokasi berhasil diambil. Akurasi bagus' //Location fetched. Accuracy is good
             : 'Lokasi berhasil diambil, tetapi akurasi belum stabil'; //Location fetched, but accuracy is not stable yet
       });
+      return position;
     } catch (e) {
       setState(() {
         _isLoading = false;
         _statusText = 'Gagal mendapatkan lokasi: $e'; //failed to get location
       });
+      return null;
     }
   }
 
-  void _recordCurrentPoint() {
-    if (_currentPosition == null) {
-      setState(() {
-        _statusText = 'Ambil lokasi saat ini sebelum merekam titik'; //get current location before recording a point
-      });
-      return;
-    }
-
+  Future<void> _recordCurrentPoint() async {
     if (_recordedPoints.length >= PlotGeometry.requiredPointCount) {
       _showAlertDialog(
         title: 'Batas maksimum titik tercapai', //max point limit reached
@@ -113,9 +111,14 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
       return;
     }
 
+    final position = await _getCurrentLocation();
+    if (position == null) {
+      return;
+    }
+
     if (PlotGeometry.isTooCloseToLastRecordedPoint(
       points: _recordedPoints,
-      currentPosition: _currentPosition!,
+      currentPosition: position,
     )) {
       setState(() {
         _statusText = 'Lokasi saat ini terlalu dekat dengan titik terakhir yang direkam.'; //Current location is too close to the last recorded point
@@ -124,9 +127,9 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
     }
 
     final point = PlotPoint(
-      latitude: _currentPosition!.latitude,
-      longitude: _currentPosition!.longitude,
-      accuracy: _currentPosition!.accuracy,
+      latitude: position.latitude,
+      longitude: position.longitude,
+      accuracy: position.accuracy,
       recordedAt: DateTime.now(),
     );
 
@@ -149,13 +152,6 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
     setState(() {
       _recordedPoints.removeLast();
       _statusText = 'Titik terakhir dihapus'; //last point removed
-    });
-  }
-
-  void _clearAllPoints() {
-    setState(() {
-      _recordedPoints.clear();
-      _statusText = 'Semua titik yang direkam telah dihapus'; //all recorded points cleared
     });
   }
 
@@ -287,6 +283,65 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
     );
   }
 
+  Future<bool> _confirmDiscardUnsavedPoints() async {
+    if (!_hasUnsavedPoints) {
+      return true;
+    }
+
+    final shouldExit = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        final color = Theme.of(context).colorScheme;
+
+        return AlertDialog(
+          title: const Text('Lahan belum disimpan'),
+          content: const Text(
+            'Anda memiliki titik yang belum disimpan. Pilih Keluar untuk membuang titik tersebut atau tetap di halaman ini.',
+          ),
+          actions: [
+            OutlinedButton(
+              style: OutlinedButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: color.primary,
+                side: BorderSide(color: color.primary),
+              ),
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Keluar'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Tetap di halaman'),
+            ),
+          ],
+        );
+      },
+    );
+
+    return shouldExit ?? false;
+  }
+
+  void _exitPage() {
+    if (mounted) {
+      setState(() {
+        _isLeaving = true;
+      });
+    }
+
+    if (Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+      return;
+    }
+    context.go('/home/seaweed-home');
+  }
+
+  Future<void> _handleBackPressed() async {
+    final shouldExit = await _confirmDiscardUnsavedPoints();
+    if (!mounted || !shouldExit) {
+      return;
+    }
+    _exitPage();
+  }
+
   @override
   Widget build(BuildContext context) {
     final latText = _currentPosition == null
@@ -301,22 +356,24 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
     final areaSquareMeters =
         PlotGeometry.calculatePolygonAreaSquareMeters(_recordedPoints);
 
-    return Scaffold(
-      appBar: AppBar(
-        leading: BackButton(
-          onPressed: () {
-            if (Navigator.of(context).canPop()) {
-              Navigator.of(context).pop();
-              return;
-            }
-            context.go('/home/seaweed-home');
-          },
+    return PopScope(
+      canPop: !_hasUnsavedPoints || _isLeaving,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) {
+          return;
+        }
+        await _handleBackPressed();
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          leading: BackButton(
+            onPressed: _handleBackPressed,
+          ),
+          title: const Text('Pemetaan Lahan'), //plot/farm mapping
         ),
-        title: const Text('Pemetaan Lahan'), //plot/farm mapping 
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Card(
@@ -364,14 +421,9 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
               runSpacing: 8,
               children: [
                 ElevatedButton.icon(
-                  onPressed: _isLoading ? null : _getCurrentLocation,
-                  icon: const Icon(Icons.my_location),
-                  label: Text(_isLoading ? 'Menunggu...' : 'Dapatkan lokasi saat ini'), //waiting, get current location
-                ),
-                ElevatedButton.icon(
-                  onPressed: _recordCurrentPoint,
+                  onPressed: _isLoading ? null : _recordCurrentPoint,
                   icon: const Icon(Icons.add_location_alt),
-                  label: const Text('Rekam titik'), //record point
+                  label: Text(_isLoading ? 'Menunggu...' : 'Rekam titik'), //waiting, record point
                 ),
                 ElevatedButton.icon(
                   onPressed: _isSaving ? null : _savePlot,
@@ -381,12 +433,7 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
                 OutlinedButton.icon(
                   onPressed: _undoLastPoint,
                   icon: const Icon(Icons.undo),
-                  label: const Text('Membuka'), //undo
-                ),
-                OutlinedButton.icon(
-                  onPressed: _clearAllPoints,
-                  icon: const Icon(Icons.clear_all),
-                  label: const Text('Menghapus'), //remove
+                  label: const Text('Ulang'), //undo
                 ),
               ],
             ),
@@ -462,6 +509,7 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
                     },
                   ),
           ],
+        ),
         ),
       ),
     );

@@ -28,13 +28,64 @@ class _SavedPlotDetailPageState extends State<SavedPlotDetailPage> {
     _plotFuture = _plotLocalStorage.getPlotById(widget.plotId);
   }
 
+  Future<void> _deletePlot(SavedPlot plot) async {
+    await _plotLocalStorage.deletePlot(plot.id);
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('${plot.name} deleted')),
+    );
+    context.pop();
+  }
+
+  Future<void> _confirmDelete(SavedPlot plot) async {
+    final shouldDelete = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Hapus lahan?'),
+          content: Text(
+            'Hapus ${plot.name}? Tindakan ini tidak dapat dibatalkan.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Batal'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Hapus'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldDelete == true) {
+      await _deletePlot(plot);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final dateFormat = DateFormat('yyyy-MM-dd HH:mm');
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Detail Lahan yang Disimpan'), //saved plot details
+        title: const Text('Detail Lahan'),
+        actions: [
+          FutureBuilder<SavedPlot?>(
+            future: _plotFuture,
+            builder: (context, snapshot) {
+              final plot = snapshot.data;
+              return IconButton(
+                tooltip: 'Hapus lahan',
+                onPressed: plot == null ? null : () => _confirmDelete(plot),
+                icon: const Icon(Icons.delete_outline),
+              );
+            },
+          ),
+        ],
       ),
       body: FutureBuilder<SavedPlot?>(
         future: _plotFuture,
@@ -45,7 +96,7 @@ class _SavedPlotDetailPageState extends State<SavedPlotDetailPage> {
 
           final plot = snapshot.data;
           if (plot == null) {
-            return const Center(child: Text('Lahan tidak ditemukan')); //plot not found 
+            return const Center(child: Text('Lahan tidak ditemukan'));
           }
 
           return SingleChildScrollView(
@@ -84,7 +135,7 @@ class _SavedPlotDetailPageState extends State<SavedPlotDetailPage> {
                               });
                             },
                             icon: const Icon(Icons.description_outlined),
-                            label: const Text('Buka Formulir Lahan'), //open plot form
+                            label: const Text('Buka Formulir Lahan'),
                           ),
                         ),
                       ],
@@ -93,7 +144,7 @@ class _SavedPlotDetailPageState extends State<SavedPlotDetailPage> {
                 ),
                 const SizedBox(height: 16),
                 const Text(
-                  'Pratinjau Bentuk', //shape preview
+                  'Pratinjau Bentuk',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,

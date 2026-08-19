@@ -71,7 +71,7 @@ class _MyPlotPageState extends State<MyPlotPage> {
     final color = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: TransparentAppBar(
-        title: "LahanKu",
+        title: "Rumput Laut",
         actions: [
           IconButton(
             onPressed: _controller.reload,
