@@ -206,7 +206,7 @@ class ScaffoldWithNavBar extends StatelessWidget {
                       ),
                       child: Container(
                         decoration: BoxDecoration(
-                          color: navigationShell.currentIndex == 1 ? inActiveColor : activeColor,
+                          color: navigationShell.currentIndex == 4 ? inActiveColor : activeColor,
                           borderRadius: BorderRadius.circular(kDefaultRadius),
                         ),
                         width: double.infinity,
@@ -216,7 +216,7 @@ class ScaffoldWithNavBar extends StatelessWidget {
                             Image(
                               image: const AssetImage(R.ASSETS_ICONS_PROFILE_PNG),
                               color:
-                                  navigationShell.currentIndex == 1 ? activeColor : inActiveColor,
+                                  navigationShell.currentIndex == 4 ? activeColor : inActiveColor,
                               width: 32,
                             ),
                             Text(
@@ -225,7 +225,7 @@ class ScaffoldWithNavBar extends StatelessWidget {
                                 fontSize: 16,
                                 fontWeight: kFontweightSemiBold,
                                 color:
-                                    navigationShell.currentIndex == 1 ? activeColor : inActiveColor,
+                                    navigationShell.currentIndex == 4 ? activeColor : inActiveColor,
                               ),
                             ),
                           ],
