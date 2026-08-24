@@ -16,9 +16,7 @@ class HomeDigitalShoresMenu extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: kHomeMenu
               .take(3) // changed to 3 due to new button
-              .map(
-                (menu) => HomeMenuTile(menu: menu),
-              )
+              .map((menu) => Expanded(child: HomeMenuTile(menu: menu)))
               .toList(),
         ),
         SizedBox(height: 16),
@@ -26,9 +24,7 @@ class HomeDigitalShoresMenu extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: kHomeMenu
               .sublist(3) // changed to 3, after merge and 4 features display
-              .map(
-                (menu) => HomeMenuTile(menu: menu),
-              )
+              .map((menu) => Expanded(child: HomeMenuTile(menu: menu)))
               .toList(),
         ),
       ],

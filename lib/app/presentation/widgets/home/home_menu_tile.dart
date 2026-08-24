@@ -20,7 +20,6 @@ class HomeMenuTile extends StatelessWidget {
       splashColor: Colors.grey.withValues(alpha: 0.3),
       highlightColor: Colors.grey.withValues(alpha: 0.1),
       child: Container(
-        width: 110,
         color: Colors.transparent,
         child: Column(
           children: [
