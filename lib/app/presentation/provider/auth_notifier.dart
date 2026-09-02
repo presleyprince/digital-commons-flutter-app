@@ -50,11 +50,21 @@ class AuthNotifier extends ChangeNotifier {
   AuthNotifier({required this.repository});
 
   bool isAdmin() {
-      return (userData?.isAdmin ?? false) || userData?.role == UserRole.secretary; // changed so both secreatary and admin can add info and verify plots
+      return (userData?.isAdmin ?? false) || userData?.role == UserRole.secretary || userData?.role == UserRole.superAdmin; // changed so both secreatary and admin can add info and verify plots
+  }
+
+  bool isSuperAdmin() {
+  return userData?.role == UserRole.superAdmin;
   }
 
   void setUser(UserData userData) {
     this.userData = userData;
+
+    debugPrint('CURRENT USER ROLE: ${this.userData?.role}');
+    debugPrint(
+      'IS SUPER ADMIN: ${this.userData?.role == UserRole.superAdmin}',
+    );
+
   }
 
   void getUserFromLocal() {

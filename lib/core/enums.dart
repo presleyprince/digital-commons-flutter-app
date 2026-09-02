@@ -89,7 +89,8 @@ enum WeatherRegionCode {
 enum UserRole { // adding admin role to New Secretary role
   admin('Admin'),
   secretary('Sekretaris'),
-  user('Pengguna');
+  user('Pengguna'),
+  superAdmin('Super Admin');
 
   final String label;
   const UserRole(this.label);

@@ -14,8 +14,16 @@ class PathGuard {
 // added new guard that allows only secretaries and admins to access certain pages
     static void secretaryGuard(BuildContext context) {                                        
     final role = Provider.of<AuthNotifier>(context, listen: false).userData?.role;         // gets the role of the current user
-    if (role != UserRole.secretary && role != UserRole.admin) {                              // if user if not a secretary or admin remove them
+    if (role != UserRole.secretary && role != UserRole.admin && role != UserRole.superAdmin) {// if user if not a secretary or admin remove them
       Future.microtask(() => router.pop());                                                 // send them back to the previous page
     }                                                                                       
-  }           
+  }
+ // added new guard that allows only super admin to access certain pages            
+  static void superAdminGuard(BuildContext context) {
+  final role = Provider.of<AuthNotifier>(context, listen: false).userData?.role;
+  if (role != UserRole.superAdmin) {
+    Future.microtask(() => router.pop());
+  }
+}
+
 }
