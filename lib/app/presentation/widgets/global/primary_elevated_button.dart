@@ -59,13 +59,15 @@ class PrimaryElevatedButton extends StatelessWidget {
                   ),
                 )
               : const SizedBox(),
-          Text(
+          Flexible(
+            child:Text(
             text,
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w500,
               color: secondary ? color.onSecondary : color.onPrimary,
             ),
+          ),
           ),
         ],
       ),
