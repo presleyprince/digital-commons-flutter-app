@@ -215,7 +215,6 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
       );
     }
   }
-
   Future<String?> _promptPlotName() async {
     final controller = TextEditingController();
 

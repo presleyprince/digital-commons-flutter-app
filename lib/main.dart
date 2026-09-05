@@ -13,6 +13,7 @@ import 'package:digital_shores/core/theme.dart';
 import 'package:digital_shores/firebase_options.dart';
 import 'package:digital_shores/router.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -20,13 +21,22 @@ import 'package:flutter_quill/flutter_quill.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'injection_container.dart' as di;
 import 'package:webview_flutter_android/webview_flutter_android.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  WebViewPlatform.instance = AndroidWebViewPlatform();
+  if (defaultTargetPlatform == TargetPlatform.android) {
+    WebViewPlatform.instance = AndroidWebViewPlatform();
+  }
+  if (defaultTargetPlatform == TargetPlatform.windows ||
+      defaultTargetPlatform == TargetPlatform.linux ||
+      defaultTargetPlatform == TargetPlatform.macOS) {
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
+  }
   Intl.defaultLocale = 'id_ID';
   await di.init();
 

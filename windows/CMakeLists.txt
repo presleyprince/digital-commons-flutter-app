@@ -2,6 +2,11 @@
 cmake_minimum_required(VERSION 3.14)
 project(digital_shores LANGUAGES CXX)
 
+# Firebase's bundled Windows CMake scripts still declare an older minimum
+# version. Newer CMake releases reject those scripts unless a policy minimum
+# is provided explicitly at the top level.
+set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
+
 # The name of the executable created for the application. Change this to change
 # the on-disk name of your application.
 set(BINARY_NAME "digital_shores")
