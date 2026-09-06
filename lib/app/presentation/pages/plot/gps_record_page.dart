@@ -1,8 +1,9 @@
 import 'package:digital_shores/app/presentation/pages/plot/models/plot_point.dart';
 import 'package:digital_shores/app/presentation/pages/plot/models/saved_plot.dart';
-import 'package:digital_shores/app/presentation/pages/plot/painters/plot_preview_painter.dart';
+import 'package:digital_shores/app/presentation/pages/plot/map/plot_map_mode.dart';
 import 'package:digital_shores/app/presentation/pages/plot/storage/plot_local_storage.dart';
 import 'package:digital_shores/app/presentation/pages/plot/utils/plot_geometry.dart';
+import 'package:digital_shores/app/presentation/pages/plot/widgets/plot_map_view.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
@@ -26,14 +27,22 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
   String _statusText = 'Belum ada lokasi'; //no location yet
   Position? _currentPosition;
   final List<PlotPoint> _recordedPoints = [];
+  late Future<List<SavedPlot>> _savedPlotsFuture;
 
   bool get _hasUnsavedPoints => _recordedPoints.isNotEmpty;
+
+  @override
+  void initState() {
+    super.initState();
+    _savedPlotsFuture = _plotLocalStorage.getAllPlots();
+  }
 
   Future<Position?> _getCurrentLocation() async {
     if (_recordedPoints.length >= PlotGeometry.requiredPointCount) {
       await _showAlertDialog(
         title: 'Plot already complete',
-        message: 'This plot already has 4 points. Save it or use Ulang before recording another location.',
+        message:
+            'This plot already has 4 points. Save it or use Ulang before recording another location.',
       );
       return null;
     }
@@ -61,7 +70,8 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
       if (permission == LocationPermission.denied) {
         setState(() {
           _isLoading = false;
-          _statusText = 'Akses izin lokasi ditolak'; //location access permission denied
+          _statusText =
+              'Akses izin lokasi ditolak'; //location access permission denied
         });
         return null;
       }
@@ -76,7 +86,8 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
       }
 
       setState(() {
-        _statusText = 'Mengambil lokasi saat ini...'; //fetching current location 
+        _statusText =
+            'Mengambil lokasi saat ini...'; //fetching current location
       });
 
       final position = await Geolocator.getCurrentPosition(
@@ -106,7 +117,8 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
     if (_recordedPoints.length >= PlotGeometry.requiredPointCount) {
       _showAlertDialog(
         title: 'Batas maksimum titik tercapai', //max point limit reached
-        message: 'Lahan segiempat harus memiliki tepat 4 titik.', //Quadrilateral plots must contain exactly 4 points
+        message:
+            'Lahan segiempat harus memiliki tepat 4 titik.', //Quadrilateral plots must contain exactly 4 points
       );
       return;
     }
@@ -121,7 +133,8 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
       currentPosition: position,
     )) {
       setState(() {
-        _statusText = 'Lokasi saat ini terlalu dekat dengan titik terakhir yang direkam.'; //Current location is too close to the last recorded point
+        _statusText =
+            'Lokasi saat ini terlalu dekat dengan titik terakhir yang direkam.'; //Current location is too close to the last recorded point
       });
       return;
     }
@@ -144,7 +157,8 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
   void _undoLastPoint() {
     if (_recordedPoints.isEmpty) {
       setState(() {
-        _statusText = 'Tidak ada titik yang dapat dibatalkan'; //no point to undo
+        _statusText =
+            'Tidak ada titik yang dapat dibatalkan'; //no point to undo
       });
       return;
     }
@@ -159,7 +173,8 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
     if (_recordedPoints.length != PlotGeometry.requiredPointCount) {
       await _showAlertDialog(
         title: 'Gagal menyimpan lahan', //unable to save plots
-        message: 'Hanya lahan segiempat dengan tepat 4 titik yang dapat disimpan.', //Only quadrilateral plots with exactly 4 points can be saved.
+        message:
+            'Hanya lahan segiempat dengan tepat 4 titik yang dapat disimpan.', //Only quadrilateral plots with exactly 4 points can be saved.
       );
       return;
     }
@@ -197,6 +212,7 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
       setState(() {
         _isSaving = false;
         _recordedPoints.clear();
+        _savedPlotsFuture = _plotLocalStorage.getAllPlots();
         _statusText = '${plot.name} berhasil disimpan'; //saved successfully
       });
 
@@ -211,7 +227,8 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
       });
       await _showAlertDialog(
         title: 'Gagal menyimpan lahan:', //failed to save plot
-        message: 'Terjadi kesalahan saat menyimpan lahan ini.\n\n$e', //error occurred while saving this plot
+        message:
+            'Terjadi kesalahan saat menyimpan lahan ini.\n\n$e', //error occurred while saving this plot
       );
     }
   }
@@ -228,7 +245,8 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Masukkan nama lahan atau lewati untuk menggunakan nama otomatis.'), //enter plot name or skip for automatic name
+              const Text(
+                  'Masukkan nama lahan atau lewati untuk menggunakan nama otomatis.'), //enter plot name or skip for automatic name
               const SizedBox(height: 12),
               TextField(
                 controller: controller,
@@ -241,7 +259,7 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(null), 
+              onPressed: () => Navigator.of(context).pop(null),
               child: const Text('Batal'), //cancel
             ),
             TextButton(
@@ -374,142 +392,150 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
         body: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Status saat ini', //current status
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Status saat ini', //current status
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(_statusText),
-                    const SizedBox(height: 16),
-                    Text('Garis lintang: $latText'), //latitude
-                    const SizedBox(height: 8),
-                    Text('Garis bujur: $lngText'), //longitude
-                    const SizedBox(height: 8),
-                    Text('Ketepatan: $accuracyText'), //accuracy
-                    const SizedBox(height: 12),
-                    Text('Poin Tercatat: ${_recordedPoints.length}/4'), //recorded points
-                    const SizedBox(height: 8),
-                    Text(
-                      _recordedPoints.length < PlotGeometry.requiredPointCount
-                          ? 'Mode pratinjau: titik dan garis tepi' //Preview mode: points and polyline/border lines
-                          : 'Mode pratinjau: poligon', //Preview mode: polygon
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      _recordedPoints.length < PlotGeometry.requiredPointCount
-                          ? 'Bidang: Tidak tersedia' //area, not available
-                          : 'Bidang: ${areaSquareMeters.toStringAsFixed(2)} m^2',
-                    ),
-                  ],
+                      const SizedBox(height: 12),
+                      Text(_statusText),
+                      const SizedBox(height: 16),
+                      Text('Garis lintang: $latText'), //latitude
+                      const SizedBox(height: 8),
+                      Text('Garis bujur: $lngText'), //longitude
+                      const SizedBox(height: 8),
+                      Text('Ketepatan: $accuracyText'), //accuracy
+                      const SizedBox(height: 12),
+                      Text(
+                          'Poin Tercatat: ${_recordedPoints.length}/4'), //recorded points
+                      const SizedBox(height: 8),
+                      Text(
+                        _recordedPoints.length < PlotGeometry.requiredPointCount
+                            ? 'Mode pratinjau: titik dan garis tepi' //Preview mode: points and polyline/border lines
+                            : 'Mode pratinjau: poligon', //Preview mode: polygon
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        _recordedPoints.length < PlotGeometry.requiredPointCount
+                            ? 'Bidang: Tidak tersedia' //area, not available
+                            : 'Bidang: ${areaSquareMeters.toStringAsFixed(2)} m^2',
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                ElevatedButton.icon(
-                  onPressed: _isLoading ? null : _recordCurrentPoint,
-                  icon: const Icon(Icons.add_location_alt),
-                  label: Text(_isLoading ? 'Menunggu...' : 'Rekam titik'), //waiting, record point
-                ),
-                ElevatedButton.icon(
-                  onPressed: _isSaving ? null : _savePlot,
-                  icon: const Icon(Icons.save_alt),
-                  label: Text(_isSaving ? 'Menyimpan...' : 'Simpan kavling'), //saving files, save plot
-                ),
-                OutlinedButton.icon(
-                  onPressed: _undoLastPoint,
-                  icon: const Icon(Icons.undo),
-                  label: const Text('Ulang'), //undo
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Pratinjau', //preview
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: _isLoading ? null : _recordCurrentPoint,
+                    icon: const Icon(Icons.add_location_alt),
+                    label: Text(_isLoading
+                        ? 'Menunggu...'
+                        : 'Rekam titik'), //waiting, record point
+                  ),
+                  ElevatedButton.icon(
+                    onPressed: _isSaving ? null : _savePlot,
+                    icon: const Icon(Icons.save_alt),
+                    label: Text(_isSaving
+                        ? 'Menyimpan...'
+                        : 'Simpan kavling'), //saving files, save plot
+                  ),
+                  OutlinedButton.icon(
+                    onPressed: _undoLastPoint,
+                    icon: const Icon(Icons.undo),
+                    label: const Text('Ulang'), //undo
+                  ),
+                ],
               ),
-            ),
-            const SizedBox(height: 8),
-            SizedBox(
-              height: 280,
-              child: Container(
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey.shade400),
-                  borderRadius: BorderRadius.circular(12),
-                  color: Colors.grey.shade50,
+              const SizedBox(height: 16),
+              const Text(
+                'Pratinjau', //preview
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
                 ),
-                child: _recordedPoints.isEmpty
-                    ? const Center(child: Text('Tidak ada pratinjau')) //no preview
-                    : ClipRRect(
+              ),
+              const SizedBox(height: 8),
+              SizedBox(
+                height: 280,
+                child: Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey.shade400),
+                    borderRadius: BorderRadius.circular(12),
+                    color: Colors.grey.shade50,
+                  ),
+                  child: FutureBuilder<List<SavedPlot>>(
+                    future: _savedPlotsFuture,
+                    builder: (context, snapshot) {
+                      final savedPlots = snapshot.data ?? const <SavedPlot>[];
+                      if (snapshot.connectionState != ConnectionState.done &&
+                          _recordedPoints.isEmpty) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+
+                      return ClipRRect(
                         borderRadius: BorderRadius.circular(12),
-                        child: InteractiveViewer(
-                          minScale: 0.5,
-                          maxScale: 8.0,
-                          boundaryMargin: const EdgeInsets.all(80),
-                          child: CustomPaint(
-                            size: const Size(320, 320),
-                            painter: PlotPreviewPainter(
-                              points: _recordedPoints,
-                              currentPosition:
-                                  _recordedPoints.length >= PlotGeometry.requiredPointCount
-                                  ? null
-                                  : _currentPosition,
-                            ),
-                          ),
-                        ),
-                      ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Poin yang tercatat', //recorded points
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            _recordedPoints.isEmpty
-                ? const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 24),
-                    child: Center(child: Text('Belum ada poin yang tercatat')), //no recorded points yet
-                  )
-                : ListView.separated(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: _recordedPoints.length,
-                    separatorBuilder: (_, __) => const Divider(height: 1),
-                    itemBuilder: (context, index) {
-                      final point = _recordedPoints[index];
-                      return ListTile(
-                        leading: CircleAvatar(child: Text('${index + 1}')),
-                        title: Text(
-                          '${point.latitude.toStringAsFixed(6)}, ${point.longitude.toStringAsFixed(6)}',
-                        ),
-                        subtitle: Text(
-                          'Akurasi: ${point.accuracy.toStringAsFixed(2)} m', //accuracy
+                        child: PlotMapView(
+                          savedPlots: savedPlots,
+                          draftPoints: _recordedPoints,
+                          mode: PlotMapMode.recording,
+                          selectedPlotId: null,
+                          onPlotSelected: (_) {},
                         ),
                       );
                     },
                   ),
-          ],
-        ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Poin yang tercatat', //recorded points
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              _recordedPoints.isEmpty
+                  ? const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 24),
+                      child: Center(
+                          child: Text(
+                              'Belum ada poin yang tercatat')), //no recorded points yet
+                    )
+                  : ListView.separated(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: _recordedPoints.length,
+                      separatorBuilder: (_, __) => const Divider(height: 1),
+                      itemBuilder: (context, index) {
+                        final point = _recordedPoints[index];
+                        return ListTile(
+                          leading: CircleAvatar(child: Text('${index + 1}')),
+                          title: Text(
+                            '${point.latitude.toStringAsFixed(6)}, ${point.longitude.toStringAsFixed(6)}',
+                          ),
+                          subtitle: Text(
+                            'Akurasi: ${point.accuracy.toStringAsFixed(2)} m', //accuracy
+                          ),
+                        );
+                      },
+                    ),
+            ],
+          ),
         ),
       ),
     );
