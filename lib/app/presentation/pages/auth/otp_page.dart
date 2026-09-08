@@ -65,6 +65,7 @@ class _OtpPageState extends State<OtpPage> {
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: kDefaultPadding),
+              child: SingleChildScrollView( //fix overflow
               child: Column(
                 children: [
                   Image.asset(
@@ -126,8 +127,10 @@ class _OtpPageState extends State<OtpPage> {
                         onPressed: notifier.sentOtp,
                       );
                     },
+                  
                   ),
                 ],
+              ),
               ),
             ),
           ),
