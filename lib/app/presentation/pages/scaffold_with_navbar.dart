@@ -84,8 +84,8 @@ class ScaffoldWithNavBar extends StatelessWidget {
                     backgroundColor: color.primary,
                     icon: Padding(
                       padding: const EdgeInsets.only(
-                        left: 12,
-                        right: 12,
+                        left: 4,
+                        right: 4,
                       ),
                       child: Container(
                         decoration: BoxDecoration(
@@ -102,13 +102,15 @@ class ScaffoldWithNavBar extends StatelessWidget {
                                   navigationShell.currentIndex == 0 ? activeColor : inActiveColor,
                               width: 32,
                             ),
-                            Text(
-                              'Beranda',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: kFontweightSemiBold,
-                                color:
-                                    navigationShell.currentIndex == 0 ? activeColor : inActiveColor,
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                'Beranda',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: kFontweightSemiBold,
+                                  color: navigationShell.currentIndex == 0 ? activeColor : inActiveColor,
+                                ),
                               ),
                             ),
                           ],
@@ -121,7 +123,7 @@ class ScaffoldWithNavBar extends StatelessWidget {
                   BottomNavigationBarItem(
                     backgroundColor: color.primary,
                     icon: Padding(
-                      padding: const EdgeInsets.only(left: 12, right: 12),
+                      padding: const EdgeInsets.only(left: 4, right: 4),
                       child: Container(
                         decoration: BoxDecoration(
                           color: navigationShell.currentIndex == 1 ? inActiveColor : activeColor,
@@ -136,8 +138,13 @@ class ScaffoldWithNavBar extends StatelessWidget {
                               color: navigationShell.currentIndex == 1 ? activeColor : inActiveColor,
                               width: 32,
                             ),
-                            Text('LahanKu', style: TextStyle(fontSize: 16, fontWeight: kFontweightSemiBold,
-                              color: navigationShell.currentIndex == 1 ? activeColor : inActiveColor)),
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                'LahanKu', 
+                                style: TextStyle(fontSize: 16, fontWeight: kFontweightSemiBold,
+                                color: navigationShell.currentIndex == 1 ? activeColor : inActiveColor)),
+                            ),
                           ],
                         ),
                       ),
@@ -148,7 +155,7 @@ class ScaffoldWithNavBar extends StatelessWidget {
                   BottomNavigationBarItem(
                     backgroundColor: color.primary,
                     icon: Padding(
-                      padding: const EdgeInsets.only(left: 12, right: 12),
+                      padding: const EdgeInsets.only(left: 4, right: 4),
                       child: Container(
                         decoration: BoxDecoration(
                           color: navigationShell.currentIndex == 2 ? inActiveColor : activeColor,
@@ -163,8 +170,11 @@ class ScaffoldWithNavBar extends StatelessWidget {
                               color: navigationShell.currentIndex == 2 ? activeColor : inActiveColor,
                               width: 32,
                             ),
-                            Text('KeuanganKu', style: TextStyle(fontSize: 16, fontWeight: kFontweightSemiBold,
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text('KeuanganKu', style: TextStyle(fontSize: 16, fontWeight: kFontweightSemiBold,
                               color: navigationShell.currentIndex == 2 ? activeColor : inActiveColor)),
+                            ),
                           ],
                         ),
                       ),
@@ -174,7 +184,7 @@ class ScaffoldWithNavBar extends StatelessWidget {
                   BottomNavigationBarItem( // added feature to nav bar
                     backgroundColor: color.primary,
                     icon: Padding(
-                      padding: const EdgeInsets.only(left: 12, right: 12),
+                      padding: const EdgeInsets.only(left: 4, right: 4),
                       child: Container(
                         decoration: BoxDecoration(
                           color: navigationShell.currentIndex == 3 ? inActiveColor : activeColor,
@@ -189,8 +199,11 @@ class ScaffoldWithNavBar extends StatelessWidget {
                               color: navigationShell.currentIndex == 3 ? activeColor : inActiveColor,
                               width: 32,
                             ),
-                            Text('Informasi', style: TextStyle(fontSize: 16, fontWeight: kFontweightSemiBold,
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text('Informasi', style: TextStyle(fontSize: 16, fontWeight: kFontweightSemiBold,
                               color: navigationShell.currentIndex == 3 ? activeColor : inActiveColor)),
+                            ),
                           ],
                         ),
                       ),
@@ -219,7 +232,9 @@ class ScaffoldWithNavBar extends StatelessWidget {
                                   navigationShell.currentIndex == 4 ? activeColor : inActiveColor,
                               width: 32,
                             ),
-                            Text(
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
                               'Profil',
                               style: TextStyle(
                                 fontSize: 16,
@@ -228,6 +243,7 @@ class ScaffoldWithNavBar extends StatelessWidget {
                                     navigationShell.currentIndex == 4 ? activeColor : inActiveColor,
                               ),
                             ),
+                            ), 
                           ],
                         ),
                       ),

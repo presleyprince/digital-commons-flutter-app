@@ -7,6 +7,7 @@ import 'package:digital_shores/app/presentation/pages/plot/models/saved_plot.dar
 import 'package:digital_shores/app/presentation/pages/plot/storage/plot_form_local_storage.dart';
 import 'package:digital_shores/app/presentation/pages/plot/storage/plot_local_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:go_router/go_router.dart';
 
 class PlotFormPage extends StatefulWidget {
   const PlotFormPage({
@@ -309,6 +310,9 @@ class _PlotFormPageState extends State<PlotFormPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Lahan dan formulir berhasil dikirim')), //plot and form submitted successfully
       );
+      await Future.delayed(const Duration(seconds: 1)); // ADDED to redirect after submitting to homepage
+      if (!mounted) return; // checks i fth euser already left the screen so it won't naviagte otherwise
+      context.go('/home'); // send back to home
     } catch (e) {
       if (!mounted) {
         return;
@@ -380,7 +384,7 @@ class _PlotFormPageState extends State<PlotFormPage> {
             TextFormField(
               controller: _ownerName,
               decoration: const InputDecoration(
-                labelText: 'Nama pemilik', //owner name
+                labelText: 'Nama pemilik*', //owner name
               ),
               maxLength: 255,
               inputFormatters: [
@@ -404,7 +408,7 @@ class _PlotFormPageState extends State<PlotFormPage> {
             TextFormField(
               controller: _ownerAddress,
               decoration: const InputDecoration(
-                labelText: 'Alamat pemilik [Street, Desa, Kecamatan, Kabupaten]', //owner address
+                labelText: 'Alamat pemilik* [Street, Desa, Kecamatan, Kabupaten]', //owner address
               ),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
@@ -419,7 +423,7 @@ class _PlotFormPageState extends State<PlotFormPage> {
             TextFormField(
               controller: _ownershipStartDate,
               decoration: const InputDecoration(
-                labelText: 'Tanggal mulai kepemilikan', //Ownership Start Date
+                labelText: 'Tanggal mulai kepemilikan*', //Ownership Start Date
                 suffixIcon: Icon(Icons.calendar_today),
               ),
               readOnly: true,
@@ -465,7 +469,7 @@ class _PlotFormPageState extends State<PlotFormPage> {
               controller: _previousOwner,
               enabled: _hasPreviousOwner,
               decoration: const InputDecoration(
-                labelText: 'Nama pemilik sebelumnya', //previous owner name
+                labelText: 'Nama pemilik sebelumnya*', //previous owner name
               ),
               maxLength: 255,
               inputFormatters: [
@@ -491,7 +495,7 @@ class _PlotFormPageState extends State<PlotFormPage> {
                   ? null
                   : _ownershipThrough.text.trim(),
               decoration: const InputDecoration(
-                labelText: 'Kepemilikan melalui', //ownership through
+                labelText: 'Kepemilikan melalui*', //ownership through
               ),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
@@ -539,7 +543,7 @@ class _PlotFormPageState extends State<PlotFormPage> {
               controller: _operatorName,
               enabled: !_isSameAsOwner,
               decoration: const InputDecoration(
-                labelText: 'Nama pengelola (sama dengan pemilik jika tidak disewa/bagi hasil)', //operator name (same as owner if not leased/shared)
+                labelText: 'Nama pengelola* (sama dengan pemilik jika tidak disewa/bagi hasil)', //operator name (same as owner if not leased/shared)
               ),
               maxLength: 255,
               inputFormatters: [
@@ -570,7 +574,7 @@ class _PlotFormPageState extends State<PlotFormPage> {
                 return null;
               },
               decoration: const InputDecoration(
-                labelText: 'Alamat pengelola [Street, Desa, Kecamatan, Kabupaten]', //operator address
+                labelText: 'Alamat pengelola* [Street, Desa, Kecamatan, Kabupaten]', //operator address
               ),
             ),
 
@@ -588,7 +592,7 @@ class _PlotFormPageState extends State<PlotFormPage> {
                 return null;
               },
               decoration: const InputDecoration(
-                labelText: 'Periode sewa', //lease period
+                labelText: 'Periode sewa*', //lease period
               ),
             ),
 
@@ -636,7 +640,7 @@ class _PlotFormPageState extends State<PlotFormPage> {
                 return null;
               },
               decoration: const InputDecoration(
-                labelText: 'Siklus Tanam Per Tahun', //planting cycle per year
+                labelText: 'Siklus Tanam Per Tahun*', //planting cycle per year
               ),
               keyboardType: TextInputType.number,
             ),
@@ -647,7 +651,7 @@ class _PlotFormPageState extends State<PlotFormPage> {
               controller: _productionCapacity,
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
-                  return 'Kapasitas Produksi wajib diisi';
+                  return 'Kapasitas Produksi wajib diisi*';
                 }
                 return null;
               },
@@ -668,7 +672,7 @@ class _PlotFormPageState extends State<PlotFormPage> {
                 return null;
               },
               decoration: const InputDecoration(
-                labelText: 'Pemilik Lahan yang Berbatasan', //Owners of bordering land
+                labelText: 'Pemilik Lahan yang Berbatasan*', //Owners of bordering land
               ),
             ),
 

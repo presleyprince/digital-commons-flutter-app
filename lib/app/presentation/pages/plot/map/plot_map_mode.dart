@@ -1,0 +1,4 @@
+enum PlotMapMode {
+  recording,
+  overview,
+}

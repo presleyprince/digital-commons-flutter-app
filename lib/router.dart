@@ -28,7 +28,6 @@ import 'package:go_router/go_router.dart';
 import 'package:digital_shores/app/presentation/pages/plot/gps_record_page.dart';
 import 'package:digital_shores/app/presentation/pages/seaweed_farmer_home.dart';
 // add import to the new verify plots page for secretaries
-import 'package:digital_shores/core/utils/path_guard.dart';
 import 'package:digital_shores/app/presentation/pages/plot/verify_plots_page.dart';
 // add manage user page
 import 'package:digital_shores/app/presentation/pages/administration/manage_users_page.dart';
@@ -37,7 +36,7 @@ final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _sectionNavigatorKey = GlobalKey<NavigatorState>();
 
 final router = GoRouter(
-  initialLocation: '/home',
+  initialLocation: '/',
   navigatorKey: _rootNavigatorKey,
   // errorBuilder: (context, state) => const NotFoundPage(),
   routes: [

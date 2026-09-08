@@ -1,120 +1,139 @@
-import 'package:digital_shores/app/presentation/widgets/global/primary_elevated_button.dart';
 import 'package:digital_shores/app/presentation/widgets/global/transparent_app_bar.dart';
 import 'package:digital_shores/core/constants.dart';
 import 'package:flutter/material.dart';
-import 'package:percent_indicator/circular_percent_indicator.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 
-class MyPlotPage extends StatefulWidget {
+class MyPlotPage extends StatelessWidget {
   const MyPlotPage({super.key});
-
-  @override
-  State<MyPlotPage> createState() => _MyPlotPageState();
-}
-
-class _MyPlotPageState extends State<MyPlotPage> {
-  late final WebViewController _controller;
-  bool _hasError = false;
-  bool _isLoading = false;
-  bool _success = true;
-  int _progress = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onWebResourceError: (WebResourceError error) {
-            if (mounted) {
-              setState(() {
-                _hasError = true;
-                _isLoading = false;
-              });
-            }
-          },
-          onProgress: (progress) {
-            if (mounted) {
-              setState(() {
-                _progress = progress;
-                if (!_isLoading && !_success) {
-                  _isLoading = true;
-                  _hasError = false;
-                }
-              });
-            }
-          },
-          onPageFinished: (url) {
-            if (mounted) {
-              setState(() {
-                _success = true;
-                _isLoading = false;
-              });
-            }
-          },
-        ),
-      )
-      ..loadRequest(Uri.parse(
-          "https://www.google.com/maps/d/u/6/embed?mid=13ESmKnvSpl4VcRxXFPB6Bs1CN57Cks8&ehbc=2E312F&noprof=1"));
-  }
-
-  void _reloadPage() {
-    setState(() {
-      _hasError = false;
-    });
-    _controller.reload();
-  }
 
   @override
   Widget build(BuildContext context) {
     final color = Theme.of(context).colorScheme;
+
     return Scaffold(
       appBar: TransparentAppBar(
         title: "Rumput Laut",
-        actions: [
-          IconButton(
-            onPressed: _controller.reload,
-            icon: const Icon(Icons.replay_rounded),
-            color: color.primary,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: kDefaultPadding),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 16),
+
+            Text(
+              "Informasi Rumput Laut",
+              style: kTitle4TextStyle,
+            ),
+
+            const SizedBox(height: 8),
+
+            Text(
+              "Pelajari informasi dasar tentang rumput laut, manfaatnya, dan panduan budidaya sederhana.",
+              style: const TextStyle(
+              fontSize: 16,
+              color: Colors.black54,
+            ),
+            ),
+
+            const SizedBox(height: 24),
+
+            _InfoCard(
+              icon: Icons.grass,
+              title: "Apa itu Rumput Laut?",
+              content:
+                  "Rumput laut adalah tanaman laut yang banyak dibudidayakan oleh masyarakat pesisir dan dapat digunakan untuk makanan, kosmetik, obat-obatan, dan industri.",
+              color: color.primary,
+            ),
+
+            _InfoCard(
+              icon: Icons.eco,
+              title: "Manfaat Rumput Laut",
+              content:
+                  "Rumput laut dapat menjadi sumber pendapatan bagi petani pesisir, mendukung ekonomi lokal, dan memiliki nilai jual yang baik.",
+              color: color.primary,
+            ),
+
+            _InfoCard(
+              icon: Icons.checklist_rounded,
+              title: "Panduan Dasar Budidaya",
+              content:
+                  "Petani perlu memilih lokasi yang sesuai, menjaga kebersihan tali dan bibit, memantau pertumbuhan, dan melakukan panen pada waktu yang tepat.",
+              color: color.primary,
+            ),
+
+            _InfoCard(
+              icon: Icons.lightbulb_outline_rounded,
+              title: "Tips untuk Petani",
+              content:
+                  "Catat lokasi budidaya, periksa kondisi laut, gunakan bibit yang sehat, dan simpan data peternakan secara teratur.",
+              color: color.primary,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _InfoCard extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String content;
+  final Color color;
+
+  const _InfoCard({
+    required this.icon,
+    required this.title,
+    required this.content,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: color.withOpacity(0.35),
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CircleAvatar(
+            radius: 24,
+            backgroundColor: color,
+            child: Icon(
+              icon,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: kTitle6TextStyle,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  content,
+                  style: const TextStyle(
+                  fontSize: 15,
+                  height: 1.4,
+                ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
-      body: _hasError
-          ? Padding(
-              padding: const EdgeInsets.symmetric(horizontal: kDefaultPadding),
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      "Gagal memuat halaman.\nPeriksa koneksi internet Anda.",
-                      textAlign: TextAlign.center,
-                      style: kTitle6TextStyle,
-                    ),
-                    SizedBox(height: 10),
-                    PrimaryElevatedButton(
-                      onPressed: _reloadPage,
-                      text: 'Coba Lagi',
-                    ),
-                  ],
-                ),
-              ),
-            )
-          : _isLoading
-              ? Center(
-                  child: CircularPercentIndicator(
-                    radius: 100.0,
-                    lineWidth: 10.0,
-                    percent: _progress / 100,
-                    animation: true,
-                    header: Text("Icon header"),
-                    center: Text("$_progress%"),
-                    backgroundColor: Colors.grey,
-                    progressColor: Colors.blue,
-                  ),
-                )
-              : WebViewWidget(controller: _controller),
     );
   }
 }
