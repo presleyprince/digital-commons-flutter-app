@@ -28,7 +28,6 @@ import 'package:go_router/go_router.dart';
 import 'package:digital_shores/app/presentation/pages/plot/gps_record_page.dart';
 import 'package:digital_shores/app/presentation/pages/seaweed_farmer_home.dart';
 // add import to the new verify plots page for secretaries
-import 'package:digital_shores/core/utils/path_guard.dart';
 import 'package:digital_shores/app/presentation/pages/plot/verify_plots_page.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
