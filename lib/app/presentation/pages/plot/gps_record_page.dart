@@ -224,20 +224,22 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
       builder: (context) {
         return AlertDialog(
           title: const Text('Simpan Lahan'), //save plot
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('Masukkan nama lahan atau lewati untuk menggunakan nama otomatis.'), //enter plot name or skip for automatic name
-              const SizedBox(height: 12),
-              TextField(
-                controller: controller,
-                decoration: const InputDecoration(
-                  labelText: 'Nama lahan', //plot name
-                  hintText: 'Opsional', //optional
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Masukkan nama lahan atau lewati untuk menggunakan nama otomatis.'), //enter plot name or skip for automatic name
+                const SizedBox(height: 12),
+                TextField(
+                  controller: controller,
+                  decoration: const InputDecoration(
+                    labelText: 'Nama lahan', //plot name
+                    hintText: 'Opsional', //optional
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
           actions: [
             TextButton(
