@@ -254,8 +254,8 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
                   labelText: 'Nama lahan', //plot name
                   hintText: 'Opsional', //optional
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
           actions: [
             TextButton(
