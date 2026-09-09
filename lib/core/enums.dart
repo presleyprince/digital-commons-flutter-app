@@ -90,7 +90,7 @@ enum UserRole { // adding admin role to New Secretary role
   admin('Admin'),
   secretary('Sekretaris'),
   user('Pengguna'),
-  superadmin('Super Admin'); // FIX:added so we can log in and matches database role number
+  superAdmin('Super Admin');
 
   final String label;
   const UserRole(this.label);

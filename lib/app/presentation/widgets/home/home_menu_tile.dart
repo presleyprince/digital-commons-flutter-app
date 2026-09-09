@@ -22,6 +22,7 @@ class HomeMenuTile extends StatelessWidget {
       child: Container(
         color: Colors.transparent,
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.end,
           children: [
             Image.asset(
               menu.image,
@@ -29,17 +30,39 @@ class HomeMenuTile extends StatelessWidget {
               height: 64,
               fit: BoxFit.contain,
             ),
+            const SizedBox(height: 8),
             Container(
+              constraints: const BoxConstraints(
+                minWidth: 95,
+                minHeight: 42,
+              ),
+              alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: color.primary,
                 borderRadius: BorderRadius.circular(8),
               ),
-              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4,),
               child: Text(
                 menu.title,
-                style: kTitle7TextStyle.copyWith(color: color.onPrimary),
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: kTitle7TextStyle.copyWith(
+                  color: color.onPrimary,
+                ),
               ),
             ),
+            //Container(
+              //decoration: BoxDecoration(
+                //color: color.primary,
+                //borderRadius: BorderRadius.circular(8),
+              //),
+              //padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              //child: Text(
+                //menu.title,
+                //style: kTitle7TextStyle.copyWith(color: color.onPrimary),
+              //),
+            //),
           ],
         ),
       ),
