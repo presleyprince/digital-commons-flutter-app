@@ -17,6 +17,7 @@ class PlotMapView extends StatefulWidget {
     required this.mode,
     required this.selectedPlotId,
     required this.onPlotSelected,
+    this.resetSignal = 0,
   });
 
   final List<SavedPlot> savedPlots;
@@ -24,6 +25,7 @@ class PlotMapView extends StatefulWidget {
   final PlotMapMode mode;
   final String? selectedPlotId;
   final ValueChanged<SavedPlot?> onPlotSelected;
+  final int resetSignal;
 
   @override
   State<PlotMapView> createState() => _PlotMapViewState();
@@ -83,6 +85,7 @@ class _PlotMapViewState extends State<PlotMapView> {
                 selectedPlotId: widget.selectedPlotId,
                 onPlotSelected: widget.onPlotSelected,
                 onMapReady: _handleOnlineMapReady,
+                resetSignal: widget.resetSignal,
               )
             : OfflinePlotCanvas(
                 savedPlots: widget.savedPlots,
@@ -90,18 +93,24 @@ class _PlotMapViewState extends State<PlotMapView> {
                 mode: widget.mode,
                 selectedPlotId: widget.selectedPlotId,
                 onPlotSelected: widget.onPlotSelected,
+                resetSignal: widget.resetSignal,
               );
 
         return Stack(
           children: [
             Positioned.fill(child: child),
-            Positioned(
-              left: 8,
-              top: 8,
-              child: _MapModeBadge(
-                isOnline: useOnlineMap,
-                isLoading: snapshot.connectionState != ConnectionState.done ||
-                    (useOnlineMap && !_onlineMapReady),
+            SafeArea(
+              child: Align(
+                alignment: Alignment.topCenter,
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: _MapModeBadge(
+                    isOnline: useOnlineMap,
+                    isLoading:
+                        snapshot.connectionState != ConnectionState.done ||
+                            (useOnlineMap && !_onlineMapReady),
+                  ),
+                ),
               ),
             ),
             if (_selectedPlot != null)

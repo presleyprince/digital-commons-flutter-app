@@ -24,8 +24,7 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
   bool _isLoading = false;
   bool _isSaving = false;
   bool _isLeaving = false;
-  String _statusText = 'Belum ada lokasi'; //no location yet
-  Position? _currentPosition;
+  int _mapResetSignal = 0;
   final List<PlotPoint> _recordedPoints = [];
   late Future<List<SavedPlot>> _savedPlotsFuture;
 
@@ -49,7 +48,6 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
 
     setState(() {
       _isLoading = true;
-      _statusText = 'Memeriksa layanan lokasi...'; //checking location services
     });
 
     try {
@@ -57,8 +55,8 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
       if (!serviceEnabled) {
         setState(() {
           _isLoading = false;
-          _statusText = 'Layanan lokasi mati'; //location service is off
         });
+        _showStatusMessage('Layanan lokasi mati');
         return null;
       }
 
@@ -70,25 +68,20 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
       if (permission == LocationPermission.denied) {
         setState(() {
           _isLoading = false;
-          _statusText =
-              'Akses izin lokasi ditolak'; //location access permission denied
         });
+        _showStatusMessage('Akses izin lokasi ditolak');
         return null;
       }
 
       if (permission == LocationPermission.deniedForever) {
         setState(() {
           _isLoading = false;
-          _statusText =
-              'Izin lokasi ditolak secara permanen. Aktifkan di pengaturan sistem.'; //Location permission permanently denied. Enable it in system settings
         });
+        _showStatusMessage(
+          'Izin lokasi ditolak secara permanen. Aktifkan di pengaturan sistem.',
+        );
         return null;
       }
-
-      setState(() {
-        _statusText =
-            'Mengambil lokasi saat ini...'; //fetching current location
-      });
 
       final position = await Geolocator.getCurrentPosition(
         locationSettings: const LocationSettings(
@@ -97,18 +90,19 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
       );
 
       setState(() {
-        _currentPosition = position;
         _isLoading = false;
-        _statusText = position.accuracy <= 10
-            ? 'Lokasi berhasil diambil. Akurasi bagus' //Location fetched. Accuracy is good
-            : 'Lokasi berhasil diambil, tetapi akurasi belum stabil'; //Location fetched, but accuracy is not stable yet
       });
+      _showStatusMessage(
+        position.accuracy <= 10
+            ? 'Lokasi berhasil diambil. Akurasi bagus'
+            : 'Lokasi berhasil diambil, tetapi akurasi belum stabil',
+      );
       return position;
     } catch (e) {
       setState(() {
         _isLoading = false;
-        _statusText = 'Gagal mendapatkan lokasi: $e'; //failed to get location
       });
+      _showStatusMessage('Gagal mendapatkan lokasi: $e');
       return null;
     }
   }
@@ -132,10 +126,9 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
       points: _recordedPoints,
       currentPosition: position,
     )) {
-      setState(() {
-        _statusText =
-            'Lokasi saat ini terlalu dekat dengan titik terakhir yang direkam.'; //Current location is too close to the last recorded point
-      });
+      _showStatusMessage(
+        'Lokasi saat ini terlalu dekat dengan titik terakhir yang direkam.',
+      );
       return;
     }
 
@@ -148,39 +141,35 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
 
     setState(() {
       _recordedPoints.add(point);
-      _statusText = _recordedPoints.length == PlotGeometry.requiredPointCount
-          ? 'Titik 4 direkam. Lahan siap disimpan' //Point 4 recorded. Plot is ready to save
-          : 'Titik ${_recordedPoints.length} direkam'; //Point ${_recordedPoints.length} recorded
     });
+    _showStatusMessage(
+      _recordedPoints.length == PlotGeometry.requiredPointCount
+          ? 'Titik 4 direkam. Lahan siap disimpan'
+          : 'Titik ${_recordedPoints.length} direkam',
+    );
   }
 
   void _undoLastPoint() {
     if (_recordedPoints.isEmpty) {
-      setState(() {
-        _statusText =
-            'Tidak ada titik yang dapat dibatalkan'; //no point to undo
-      });
+      _showStatusMessage('Tidak ada titik yang dapat dibatalkan');
       return;
     }
 
     setState(() {
       _recordedPoints.removeLast();
-      _statusText = 'Titik terakhir dihapus'; //last point removed
     });
+    _showStatusMessage('Titik terakhir dihapus');
   }
 
-  Future<void> _savePlot() async {
+  Future<bool> _savePlotWithName(String customName) async {
     if (_recordedPoints.length != PlotGeometry.requiredPointCount) {
       await _showAlertDialog(
         title: 'Gagal menyimpan lahan', //unable to save plots
         message:
             'Hanya lahan segiempat dengan tepat 4 titik yang dapat disimpan.', //Only quadrilateral plots with exactly 4 points can be saved.
       );
-      return;
+      return false;
     }
-
-    final customName = await _promptPlotName();
-    if (!mounted || customName == null) return;
 
     final now = DateTime.now();
     final timestamp = DateFormat('yyyy-MM-dd HH:mm').format(now);
@@ -207,75 +196,91 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
 
     try {
       await _plotLocalStorage.savePlot(plot);
-      if (!mounted) return;
+      if (!mounted) return false;
 
       setState(() {
         _isSaving = false;
         _recordedPoints.clear();
         _savedPlotsFuture = _plotLocalStorage.getAllPlots();
-        _statusText = '${plot.name} berhasil disimpan'; //saved successfully
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('${plot.name} disimpan')), //saved
       );
+      return true;
     } catch (e) {
-      if (!mounted) return;
+      if (!mounted) return false;
       setState(() {
         _isSaving = false;
-        _statusText = 'Gagal menyimpan lahan: $e'; //failed to save plot
       });
       await _showAlertDialog(
         title: 'Gagal menyimpan lahan:', //failed to save plot
         message:
             'Terjadi kesalahan saat menyimpan lahan ini.\n\n$e', //error occurred while saving this plot
       );
+      return false;
     }
   }
 
-  Future<String?> _promptPlotName() async {
-    final controller = TextEditingController();
+  Future<void> _handleDonePressed() async {
+    if (_recordedPoints.length != PlotGeometry.requiredPointCount) {
+      await _showAlertDialog(
+        title: 'Gagal menyimpan lahan', //unable to save plots
+        message:
+            'Hanya lahan segiempat dengan tepat 4 titik yang dapat disimpan.', //Only quadrilateral plots with exactly 4 points can be saved.
+      );
+      return;
+    }
 
-    final result = await showDialog<String>(
+    await _showPlotDetailsSheet();
+  }
+
+  Future<void> _showPlotDetailsSheet() async {
+    final shouldExit = await showModalBottomSheet<bool>(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Simpan Lahan'), //save plot
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                  'Masukkan nama lahan atau lewati untuk menggunakan nama otomatis.'), //enter plot name or skip for automatic name
-              const SizedBox(height: 12),
-              TextField(
-                controller: controller,
-                decoration: const InputDecoration(
-                  labelText: 'Nama lahan', //plot name
-                  hintText: 'Opsional', //optional
-                ),
+      isScrollControlled: true,
+      isDismissible: true,
+      enableDrag: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        return GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () => Navigator.of(sheetContext).pop(false),
+          child: Align(
+            alignment: Alignment.bottomCenter,
+            child: GestureDetector(
+              onTap: () {},
+              child: _PlotDetailsSheet(
+                points: List<PlotPoint>.from(_recordedPoints),
+                isSaving: _isSaving,
+                onSave: _savePlotWithName,
               ),
-            ],
+            ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(null),
-              child: const Text('Batal'), //cancel
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(''),
-              child: const Text('Lewati'), //skip
-            ),
-            FilledButton(
-              onPressed: () => Navigator.of(context).pop(controller.text),
-              child: const Text('Simpan Lahan'), //save farm
-            ),
-          ],
         );
       },
     );
 
-    return result;
+    if (!mounted || shouldExit != true) {
+      return;
+    }
+    _exitPage();
+  }
+
+  void _resetMapView() {
+    setState(() {
+      _mapResetSignal++;
+    });
+  }
+
+  void _showStatusMessage(String message) {
+    if (!mounted) {
+      return;
+    }
+
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
   }
 
   Future<void> _showAlertDialog({
@@ -362,17 +367,9 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
 
   @override
   Widget build(BuildContext context) {
-    final latText = _currentPosition == null
-        ? '--'
-        : _currentPosition!.latitude.toStringAsFixed(6);
-    final lngText = _currentPosition == null
-        ? '--'
-        : _currentPosition!.longitude.toStringAsFixed(6);
-    final accuracyText = _currentPosition == null
-        ? '--'
-        : '${_currentPosition!.accuracy.toStringAsFixed(2)} m';
-    final areaSquareMeters =
-        PlotGeometry.calculatePolygonAreaSquareMeters(_recordedPoints);
+    final canUndo = _recordedPoints.isNotEmpty;
+    final canRecord =
+        !_isLoading && _recordedPoints.length < PlotGeometry.requiredPointCount;
 
     return PopScope(
       canPop: !_hasUnsavedPoints || _isLeaving,
@@ -383,160 +380,327 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
         await _handleBackPressed();
       },
       child: Scaffold(
-        appBar: AppBar(
-          leading: BackButton(
-            onPressed: _handleBackPressed,
-          ),
-          title: const Text('Pemetaan Lahan'), //plot/farm mapping
-        ),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Status saat ini', //current status
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+        body: Stack(
+          children: [
+            Positioned.fill(
+              child: FutureBuilder<List<SavedPlot>>(
+                future: _savedPlotsFuture,
+                builder: (context, snapshot) {
+                  final savedPlots = snapshot.data ?? const <SavedPlot>[];
+                  if (snapshot.connectionState != ConnectionState.done &&
+                      _recordedPoints.isEmpty) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  return PlotMapView(
+                    savedPlots: savedPlots,
+                    draftPoints: _recordedPoints,
+                    mode: PlotMapMode.recording,
+                    selectedPlotId: null,
+                    onPlotSelected: (_) {},
+                    resetSignal: _mapResetSignal,
+                  );
+                },
+              ),
+            ),
+            SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(18, 14, 18, 20),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        _MapCircleButton(
+                          icon: Icons.close_rounded,
+                          tooltip: 'Batal',
+                          onPressed: _handleBackPressed,
                         ),
+                        const Spacer(),
+                        _MapCircleButton(
+                          icon: Icons.check_rounded,
+                          tooltip: 'Selesai',
+                          onPressed: _handleDonePressed,
+                        ),
+                      ],
+                    ),
+                    const Spacer(),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        _MapCircleButton(
+                          icon: Icons.undo_rounded,
+                          tooltip: 'Ulang',
+                          onPressed: canUndo ? _undoLastPoint : null,
+                          size: 62,
+                        ),
+                        const Spacer(),
+                        _MapCircleButton(
+                          icon: _isLoading
+                              ? Icons.hourglass_top_rounded
+                              : Icons.add_location_alt_rounded,
+                          tooltip: 'Rekam titik',
+                          onPressed: canRecord ? _recordCurrentPoint : null,
+                          size: 94,
+                          iconSize: 38,
+                        ),
+                        const Spacer(),
+                        _MapCircleButton(
+                          icon: Icons.my_location_rounded,
+                          tooltip: 'Reset tampilan',
+                          onPressed: _resetMapView,
+                          size: 62,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _MapCircleButton extends StatelessWidget {
+  const _MapCircleButton({
+    required this.icon,
+    required this.tooltip,
+    required this.onPressed,
+    this.size = 66,
+    this.iconSize = 28,
+  });
+
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback? onPressed;
+  final double size;
+  final double iconSize;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = Theme.of(context).colorScheme;
+
+    return Material(
+      color: onPressed == null
+          ? color.primary.withValues(alpha: 0.45)
+          : color.primary.withValues(alpha: 0.94),
+      shape: const CircleBorder(),
+      elevation: 2,
+      child: InkWell(
+        customBorder: const CircleBorder(),
+        onTap: onPressed,
+        child: Tooltip(
+          message: tooltip,
+          child: SizedBox(
+            width: size,
+            height: size,
+            child: Icon(
+              icon,
+              size: iconSize,
+              color: color.onPrimary,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PlotDetailsSheet extends StatefulWidget {
+  const _PlotDetailsSheet({
+    required this.points,
+    required this.isSaving,
+    required this.onSave,
+  });
+
+  final List<PlotPoint> points;
+  final bool isSaving;
+  final Future<bool> Function(String name) onSave;
+
+  @override
+  State<_PlotDetailsSheet> createState() => _PlotDetailsSheetState();
+}
+
+class _PlotDetailsSheetState extends State<_PlotDetailsSheet> {
+  final TextEditingController _nameController = TextEditingController();
+  bool _isSaving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _isSaving = widget.isSaving;
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    if (_isSaving) {
+      return;
+    }
+
+    setState(() {
+      _isSaving = true;
+    });
+    final saved = await widget.onSave(_nameController.text);
+    if (!mounted) {
+      return;
+    }
+
+    if (saved) {
+      Navigator.of(context).pop(true);
+      return;
+    }
+
+    setState(() {
+      _isSaving = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+
+    return FractionallySizedBox(
+      heightFactor: 0.78,
+      alignment: Alignment.bottomCenter,
+      child: GestureDetector(
+        onVerticalDragEnd: (details) {
+          final velocity = details.primaryVelocity ?? 0;
+          if (velocity > 300) {
+            Navigator.of(context).pop(false);
+          }
+        },
+        child: Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(
+              top: Radius.circular(28),
+            ),
+          ),
+          child: SafeArea(
+            top: false,
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(
+                24,
+                14,
+                24,
+                20 + bottomInset,
+              ),
+              child: ListView(
+                children: [
+                  Row(
+                    children: [
+                      _MapCircleButton(
+                        icon: Icons.keyboard_arrow_down_rounded,
+                        tooltip: 'Tutup',
+                        onPressed: () => Navigator.of(context).pop(false),
                       ),
-                      const SizedBox(height: 12),
-                      Text(_statusText),
-                      const SizedBox(height: 16),
-                      Text('Garis lintang: $latText'), //latitude
-                      const SizedBox(height: 8),
-                      Text('Garis bujur: $lngText'), //longitude
-                      const SizedBox(height: 8),
-                      Text('Ketepatan: $accuracyText'), //accuracy
-                      const SizedBox(height: 12),
-                      Text(
-                          'Poin Tercatat: ${_recordedPoints.length}/4'), //recorded points
-                      const SizedBox(height: 8),
-                      Text(
-                        _recordedPoints.length < PlotGeometry.requiredPointCount
-                            ? 'Mode pratinjau: titik dan garis tepi' //Preview mode: points and polyline/border lines
-                            : 'Mode pratinjau: poligon', //Preview mode: polygon
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        _recordedPoints.length < PlotGeometry.requiredPointCount
-                            ? 'Bidang: Tidak tersedia' //area, not available
-                            : 'Bidang: ${areaSquareMeters.toStringAsFixed(2)} m^2',
+                      const Spacer(),
+                      FilledButton(
+                        onPressed: _isSaving ? null : _save,
+                        style: FilledButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 30,
+                            vertical: 14,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                        ),
+                        child: Text(_isSaving ? 'Menyimpan...' : 'Simpan'),
                       ),
                     ],
                   ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  ElevatedButton.icon(
-                    onPressed: _isLoading ? null : _recordCurrentPoint,
-                    icon: const Icon(Icons.add_location_alt),
-                    label: Text(_isLoading
-                        ? 'Menunggu...'
-                        : 'Rekam titik'), //waiting, record point
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Informasi Lahan',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
-                  ElevatedButton.icon(
-                    onPressed: _isSaving ? null : _savePlot,
-                    icon: const Icon(Icons.save_alt),
-                    label: Text(_isSaving
-                        ? 'Menyimpan...'
-                        : 'Simpan kavling'), //saving files, save plot
+                  const SizedBox(height: 26),
+                  const Text(
+                    'Nama',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
-                  OutlinedButton.icon(
-                    onPressed: _undoLastPoint,
-                    icon: const Icon(Icons.undo),
-                    label: const Text('Ulang'), //undo
+                  TextField(
+                    controller: _nameController,
+                    decoration: const InputDecoration(
+                      hintText: 'Isi nama plot di sini',
+                      hintStyle: TextStyle(color: Colors.grey),
+                    ),
+                  ),
+                  const SizedBox(height: 26),
+                  const Text(
+                    'Koordinat',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  for (var i = 0; i < widget.points.length; i++)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: Text(
+                        '${i + 1}. ${widget.points[i].latitude.toStringAsFixed(6)}, '
+                        '${widget.points[i].longitude.toStringAsFixed(6)}',
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                    ),
+                  const SizedBox(height: 26),
+                  const Text(
+                    'Tambah Foto',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const [
+                      _PhotoPlaceholder(),
+                      SizedBox(width: 28),
+                      _PhotoPlaceholder(),
+                    ],
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
-              const Text(
-                'Pratinjau', //preview
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-              SizedBox(
-                height: 280,
-                child: Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey.shade400),
-                    borderRadius: BorderRadius.circular(12),
-                    color: Colors.grey.shade50,
-                  ),
-                  child: FutureBuilder<List<SavedPlot>>(
-                    future: _savedPlotsFuture,
-                    builder: (context, snapshot) {
-                      final savedPlots = snapshot.data ?? const <SavedPlot>[];
-                      if (snapshot.connectionState != ConnectionState.done &&
-                          _recordedPoints.isEmpty) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
-
-                      return ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: PlotMapView(
-                          savedPlots: savedPlots,
-                          draftPoints: _recordedPoints,
-                          mode: PlotMapMode.recording,
-                          selectedPlotId: null,
-                          onPlotSelected: (_) {},
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'Poin yang tercatat', //recorded points
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-              _recordedPoints.isEmpty
-                  ? const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 24),
-                      child: Center(
-                          child: Text(
-                              'Belum ada poin yang tercatat')), //no recorded points yet
-                    )
-                  : ListView.separated(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: _recordedPoints.length,
-                      separatorBuilder: (_, __) => const Divider(height: 1),
-                      itemBuilder: (context, index) {
-                        final point = _recordedPoints[index];
-                        return ListTile(
-                          leading: CircleAvatar(child: Text('${index + 1}')),
-                          title: Text(
-                            '${point.latitude.toStringAsFixed(6)}, ${point.longitude.toStringAsFixed(6)}',
-                          ),
-                          subtitle: Text(
-                            'Akurasi: ${point.accuracy.toStringAsFixed(2)} m', //accuracy
-                          ),
-                        );
-                      },
-                    ),
-            ],
+            ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _PhotoPlaceholder extends StatelessWidget {
+  const _PhotoPlaceholder();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 104,
+      height: 104,
+      decoration: BoxDecoration(
+        color: Colors.grey.shade300,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Icon(
+        Icons.add_rounded,
+        size: 42,
+        color: Colors.grey.shade700,
       ),
     );
   }
