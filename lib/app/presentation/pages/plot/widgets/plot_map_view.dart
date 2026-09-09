@@ -48,10 +48,14 @@ class _PlotMapViewState extends State<PlotMapView> {
   }
 
   Future<bool> _checkOnlineMapAvailability() async {
-    if (kIsWeb ||
-        (defaultTargetPlatform != TargetPlatform.android &&
-            defaultTargetPlatform != TargetPlatform.iOS)) {
+    if (!kIsWeb &&
+        defaultTargetPlatform != TargetPlatform.android &&
+        defaultTargetPlatform != TargetPlatform.iOS) {
       return false;
+    }
+
+    if (kIsWeb) {
+      return true;
     }
 
     try {
