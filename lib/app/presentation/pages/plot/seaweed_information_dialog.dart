@@ -1,91 +1,119 @@
-import 'package:digital_shores/app/presentation/pages/plot/seaweed_information_card.dart';
-import 'package:flutter/material.dart';
+import 'dart:typed_data';
 
-class SeaweedInformationDialog
-    extends StatefulWidget {
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+
+class SeaweedInformationDialog extends StatefulWidget {
   const SeaweedInformationDialog({
     super.key,
     required this.dialogTitle,
     this.initialTitle = '',
     this.initialContent = '',
-    this.initialIcon = 'info',
+    this.initialImageUrl = '',
   });
 
   final String dialogTitle;
   final String initialTitle;
   final String initialContent;
-  final String initialIcon;
+  final String initialImageUrl;
 
   @override
-  State<SeaweedInformationDialog>
-      createState() =>
-          _SeaweedInformationDialogState();
+  State<SeaweedInformationDialog> createState() =>
+      _SeaweedInformationDialogState();
 }
 
 class _SeaweedInformationDialogState
     extends State<SeaweedInformationDialog> {
-  late final TextEditingController
-      _titleController;
+  late final TextEditingController _titleController;
+  late final TextEditingController _contentController;
 
-  late final TextEditingController
-      _contentController;
-
-  late String _selectedIcon;
-
-  final List<String> _icons = [
-    'grass',
-    'eco',
-    'water',
-    'waves',
-    'book',
-    'lightbulb',
-    'warning',
-    'science',
-    'info',
-  ];
+  XFile? _selectedImage;
+  Uint8List? _selectedImageBytes;
 
   @override
   void initState() {
     super.initState();
 
-    _titleController =
-        TextEditingController(
+    _titleController = TextEditingController(
       text: widget.initialTitle,
     );
 
-    _contentController =
-        TextEditingController(
+    _contentController = TextEditingController(
       text: widget.initialContent,
     );
-
-    _selectedIcon =
-        _icons.contains(widget.initialIcon)
-            ? widget.initialIcon
-            : 'info';
   }
 
   @override
   void dispose() {
     _titleController.dispose();
     _contentController.dispose();
-
     super.dispose();
   }
 
+  Future<void> _pickImage() async {
+    try {
+      final picker = ImagePicker();
+
+      final image = await picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 80,
+      );
+
+      if (image == null) {
+        return;
+      }
+
+      final bytes = await image.readAsBytes();
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _selectedImage = image;
+        _selectedImageBytes = bytes;
+      });
+    } catch (e) {
+      debugPrint('Pick image error: $e');
+
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Gagal memilih gambar.',
+          ),
+        ),
+      );
+    }
+  }
+
   void _save() {
-    final title =
-        _titleController.text.trim();
+    final title = _titleController.text.trim();
+    final content = _contentController.text.trim();
 
-    final content =
-        _contentController.text.trim();
-
-    if (title.isEmpty ||
-        content.isEmpty) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(
+    if (title.isEmpty || content.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
             'Judul dan isi tidak boleh kosong.',
+          ),
+        ),
+      );
+
+      return;
+    }
+
+    // For a new item, an image is required.
+    // For editing, the existing image can be kept.
+    if (_selectedImage == null &&
+        widget.initialImageUrl.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Silakan pilih gambar.',
           ),
         ),
       );
@@ -98,109 +126,94 @@ class _SeaweedInformationDialogState
       {
         'title': title,
         'content': content,
-        'icon': _selectedIcon,
+        'image': _selectedImage,
       },
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor =
-        Theme.of(context).colorScheme.primary;
-
     return AlertDialog(
-      title: Text(
-        widget.dialogTitle,
-      ),
+      title: Text(widget.dialogTitle),
       content: SizedBox(
         width: 400,
         child: SingleChildScrollView(
           child: Column(
-            mainAxisSize:
-                MainAxisSize.min,
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               TextField(
-                controller:
-                    _titleController,
-                decoration:
-                    const InputDecoration(
+                controller: _titleController,
+                decoration: const InputDecoration(
                   labelText: 'Judul',
-                  border:
-                      OutlineInputBorder(),
+                  border: OutlineInputBorder(),
                 ),
               ),
               const SizedBox(height: 16),
+
               TextField(
-                controller:
-                    _contentController,
+                controller: _contentController,
                 maxLines: 5,
-                decoration:
-                    const InputDecoration(
-                  labelText:
-                      'Isi Informasi',
-                  border:
-                      OutlineInputBorder(),
+                decoration: const InputDecoration(
+                  labelText: 'Isi Informasi',
+                  border: OutlineInputBorder(),
                 ),
               ),
               const SizedBox(height: 20),
+
               const Text(
-                'Pilih Ikon',
+                'Gambar',
                 style: TextStyle(
-                  fontWeight:
-                      FontWeight.bold,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 10),
-              Wrap(
-                spacing: 10,
-                runSpacing: 10,
-                children: _icons.map(
-                  (iconName) {
-                    final selected =
-                        _selectedIcon ==
-                            iconName;
 
-                    return InkWell(
-                      borderRadius:
-                          BorderRadius.circular(10),
-                      onTap: () {
-                        setState(() {
-                          _selectedIcon =
-                              iconName;
-                        });
-                      },
-                      child: Container(
-                        padding:
-                            const EdgeInsets.all(10),
-                        decoration:
-                            BoxDecoration(
-                          borderRadius:
-                              BorderRadius.circular(
-                            10,
-                          ),
-                          border: Border.all(
-                            color: selected
-                                ? primaryColor
-                                : Colors.grey,
-                            width: selected
-                                ? 2
-                                : 1,
-                          ),
-                        ),
-                        child: Icon(
-                          seaweedIconFromName(
-                            iconName,
-                          ),
-                          color: selected
-                              ? primaryColor
-                              : Colors.grey,
-                        ),
-                      ),
-                    );
-                  },
-                ).toList(),
+              if (_selectedImageBytes != null)
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.memory(
+                    _selectedImageBytes!,
+                    height: 180,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  ),
+                )
+              else if (widget.initialImageUrl.isNotEmpty)
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.network(
+                    widget.initialImageUrl,
+                    height: 180,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    errorBuilder: (
+                      context,
+                      error,
+                      stackTrace,
+                    ) {
+                      return _imagePlaceholder();
+                    },
+                  ),
+                )
+              else
+                _imagePlaceholder(),
+
+              const SizedBox(height: 12),
+
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: _pickImage,
+                  icon: const Icon(
+                    Icons.image_outlined,
+                  ),
+                  label: Text(
+                    _selectedImage == null
+                        ? 'Pilih Gambar'
+                        : 'Ganti Gambar',
+                  ),
+                ),
               ),
             ],
           ),
@@ -218,6 +231,37 @@ class _SeaweedInformationDialogState
           child: const Text('Simpan'),
         ),
       ],
+    );
+  }
+
+  Widget _imagePlaceholder() {
+    return Container(
+      height: 180,
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.grey.shade200,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Colors.grey.shade400,
+        ),
+      ),
+      child: const Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.image_outlined,
+            size: 48,
+            color: Colors.grey,
+          ),
+          SizedBox(height: 8),
+          Text(
+            'Belum ada gambar',
+            style: TextStyle(
+              color: Colors.grey,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
