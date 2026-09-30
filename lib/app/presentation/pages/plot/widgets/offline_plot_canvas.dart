@@ -14,6 +14,7 @@ class OfflinePlotCanvas extends StatefulWidget {
     required this.mode,
     required this.selectedPlotId,
     required this.onPlotSelected,
+    this.resetSignal = 0,
   });
 
   final List<SavedPlot> savedPlots;
@@ -21,6 +22,7 @@ class OfflinePlotCanvas extends StatefulWidget {
   final PlotMapMode mode;
   final String? selectedPlotId;
   final ValueChanged<SavedPlot?> onPlotSelected;
+  final int resetSignal;
 
   @override
   State<OfflinePlotCanvas> createState() => _OfflinePlotCanvasState();
@@ -32,6 +34,7 @@ class _OfflinePlotCanvasState extends State<OfflinePlotCanvas> {
   bool _hasUserMoved = false;
   bool _hasFitInitialView = false;
   bool _isProgrammaticMove = false;
+  bool _isClampingTransform = false;
   double _currentScale = 1.0;
   int _lastFocusedDraftPointCount = -1;
   String? _lastFocusedSelectedPlotId;
@@ -45,6 +48,11 @@ class _OfflinePlotCanvasState extends State<OfflinePlotCanvas> {
   @override
   void didUpdateWidget(covariant OfflinePlotCanvas oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (widget.resetSignal != oldWidget.resetSignal) {
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _resetView(showOverview: true),
+      );
+    }
     if (_shouldRefreshView()) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _resetView());
     }
@@ -70,16 +78,16 @@ class _OfflinePlotCanvasState extends State<OfflinePlotCanvas> {
   }
 
   void _handleTransformChanged() {
-    final scale = _controller.value.getMaxScaleOnAxis();
-    if ((scale - _currentScale).abs() < 0.001) {
-      return;
+    if (!_isProgrammaticMove && !_isClampingTransform) {
+      _clampTransform();
     }
+    // Panning must also repaint the visible grid at large zoom levels.
     setState(() {
-      _currentScale = scale;
+      _currentScale = _controller.value.getMaxScaleOnAxis();
     });
   }
 
-  void _resetView() {
+  void _resetView({bool showOverview = false}) {
     if (!mounted || _viewportSize == Size.zero) {
       return;
     }
@@ -88,8 +96,11 @@ class _OfflinePlotCanvasState extends State<OfflinePlotCanvas> {
       savedPlots: widget.savedPlots,
       draftPoints: widget.draftPoints,
       mode: widget.mode,
+      viewportSize: _viewportSize,
     );
-    final rect = _preferredFocusRect(layout);
+    final rect = showOverview
+        ? layout.allBounds ?? _preferredFocusRect(layout)
+        : _preferredFocusRect(layout);
     if (rect == null) {
       return;
     }
@@ -99,23 +110,95 @@ class _OfflinePlotCanvasState extends State<OfflinePlotCanvas> {
     final availableHeight = math.max(_viewportSize.height - padding * 2, 1.0);
     final horizontalScale = availableWidth / rect.width;
     final verticalScale = availableHeight / rect.height;
-    final targetScale =
-        math.min(horizontalScale, verticalScale).clamp(0.05, 20.0).toDouble();
+    final minScale = _minimumZoomScale(layout);
+    final maxScale = _maximumZoomScale(layout);
+    final targetScale = showOverview
+        ? minScale
+        : math
+            .min(horizontalScale, verticalScale)
+            .clamp(minScale, maxScale)
+            .toDouble();
     final dx = (_viewportSize.width / 2) - (rect.center.dx * targetScale);
     final dy = (_viewportSize.height / 2) - (rect.center.dy * targetScale);
 
     _isProgrammaticMove = true;
-    _controller.value = Matrix4.identity()
+    final matrix = Matrix4.identity()
       ..storage[0] = targetScale
       ..storage[5] = targetScale
+      // Keep all axes consistent with getMaxScaleOnAxis, including below 1x.
+      ..storage[10] = targetScale
       ..storage[12] = dx
       ..storage[13] = dy;
+    _controller.value = _clampedMatrix(matrix, layout);
     _currentScale = targetScale;
     _hasUserMoved = false;
     _hasFitInitialView = true;
     _lastFocusedDraftPointCount = widget.draftPoints.length;
     _lastFocusedSelectedPlotId = widget.selectedPlotId;
     _isProgrammaticMove = false;
+  }
+
+  void _clampTransform() {
+    if (_viewportSize == Size.zero) {
+      return;
+    }
+
+    final layout = OfflinePlotCanvasLayout.build(
+      savedPlots: widget.savedPlots,
+      draftPoints: widget.draftPoints,
+      mode: widget.mode,
+      viewportSize: _viewportSize,
+    );
+    final current = _controller.value;
+    final clamped = _clampedMatrix(current, layout);
+    if ((current.storage[12] - clamped.storage[12]).abs() < 0.001 &&
+        (current.storage[13] - clamped.storage[13]).abs() < 0.001 &&
+        (current.getMaxScaleOnAxis() - clamped.getMaxScaleOnAxis()).abs() <
+            0.000001) {
+      return;
+    }
+
+    _isClampingTransform = true;
+    _controller.value = clamped;
+    _isClampingTransform = false;
+  }
+
+  Matrix4 _clampedMatrix(Matrix4 source, OfflinePlotCanvasLayout layout) {
+    final scale = source
+        .getMaxScaleOnAxis()
+        .clamp(_minimumZoomScale(layout), _maximumZoomScale(layout))
+        .toDouble();
+    final scaledWidth = layout.canvasSize.width * scale;
+    final scaledHeight = layout.canvasSize.height * scale;
+    final matrix = source.clone();
+
+    matrix.storage[0] = scale;
+    matrix.storage[5] = scale;
+    matrix.storage[10] = scale;
+    matrix.storage[12] = _clampedTranslation(
+      value: matrix.storage[12],
+      viewportExtent: _viewportSize.width,
+      scaledContentExtent: scaledWidth,
+    );
+    matrix.storage[13] = _clampedTranslation(
+      value: matrix.storage[13],
+      viewportExtent: _viewportSize.height,
+      scaledContentExtent: scaledHeight,
+    );
+    return matrix;
+  }
+
+  double _clampedTranslation({
+    required double value,
+    required double viewportExtent,
+    required double scaledContentExtent,
+  }) {
+    if (scaledContentExtent <= viewportExtent) {
+      return (viewportExtent - scaledContentExtent) / 2;
+    }
+
+    final minTranslation = viewportExtent - scaledContentExtent;
+    return value.clamp(minTranslation, 0.0).toDouble();
   }
 
   double get _focusPadding {
@@ -127,7 +210,7 @@ class _OfflinePlotCanvasState extends State<OfflinePlotCanvas> {
 
   Rect? _preferredFocusRect(OfflinePlotCanvasLayout layout) {
     if (widget.mode == PlotMapMode.recording && layout.draftBounds != null) {
-      return layout.draftBounds;
+      return _draftFocusRect(layout);
     }
     if (widget.selectedPlotId != null) {
       for (final item in layout.savedItems) {
@@ -139,80 +222,145 @@ class _OfflinePlotCanvasState extends State<OfflinePlotCanvas> {
     return layout.allBounds;
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final layout = OfflinePlotCanvasLayout.build(
-      savedPlots: widget.savedPlots,
-      draftPoints: widget.draftPoints,
-      mode: widget.mode,
+  Rect _draftFocusRect(OfflinePlotCanvasLayout layout) {
+    final bounds = layout.draftBounds!;
+    // A point or an axis-aligned line still needs finite fit dimensions.
+    // Use screen space at the existing hard zoom limit, not global canvas padding.
+    return Rect.fromCenter(
+      center: bounds.center,
+      width: math.max(
+          bounds.width, (_viewportSize.width - _focusPadding * 2) / 20),
+      height: math.max(
+          bounds.height, (_viewportSize.height - _focusPadding * 2) / 20),
     );
+  }
 
-    if (!layout.hasContent) {
-      return const Center(child: Text('Tidak ada pratinjau'));
+  double _minimumZoomScale(OfflinePlotCanvasLayout layout) {
+    final rect = layout.allBounds ?? (Offset.zero & layout.canvasSize);
+    return _scaleToFit(rect, layout, minimum: 0.05, maximum: 20.0);
+  }
+
+  double _maximumZoomScale(OfflinePlotCanvasLayout layout) {
+    if (widget.mode == PlotMapMode.overview &&
+        layout.shortestSavedEdgeLength != null) {
+      // At maximum zoom, three shortest edges fit across the usable short side.
+      const visibleShortestEdges = 3.0;
+      final available =
+          math.max(_viewportSize.shortestSide - _focusPadding * 2, 1.0);
+      return math.max(_minimumZoomScale(layout),
+          available / (layout.shortestSavedEdgeLength! * visibleShortestEdges));
+    }
+    final smallestBounds = layout.smallestPlotBounds;
+    if (smallestBounds == null) {
+      return 20.0;
+    }
+    final scale =
+        _scaleToFit(smallestBounds, layout, minimum: 0.05, maximum: 20.0);
+    final savedMaximum = math.max(scale, _minimumZoomScale(layout));
+    if (widget.mode == PlotMapMode.recording && layout.draftBounds != null) {
+      return math.max(
+          savedMaximum,
+          _scaleToFit(_draftFocusRect(layout), layout,
+              minimum: 0.05, maximum: 20.0));
+    }
+    return savedMaximum;
+  }
+
+  double _scaleToFit(
+    Rect rect,
+    OfflinePlotCanvasLayout layout, {
+    required double minimum,
+    required double maximum,
+  }) {
+    if (_viewportSize == Size.zero || rect.width <= 0 || rect.height <= 0) {
+      return minimum;
     }
 
-    return Stack(
-      children: [
-        LayoutBuilder(
-          builder: (context, constraints) {
-            _viewportSize = Size(constraints.maxWidth, constraints.maxHeight);
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (!_hasUserMoved && !_hasFitInitialView) {
-                _resetView();
-              }
-            });
+    final padding = _focusPadding;
+    final availableWidth = math.max(_viewportSize.width - padding * 2, 1.0);
+    final availableHeight = math.max(_viewportSize.height - padding * 2, 1.0);
+    final horizontalScale = availableWidth / rect.width;
+    final verticalScale = availableHeight / rect.height;
+    final canvasFillScale = math.max(
+      _viewportSize.width / layout.canvasSize.width,
+      _viewportSize.height / layout.canvasSize.height,
+    );
+    return math
+        .max(math.min(horizontalScale, verticalScale), canvasFillScale)
+        .clamp(minimum, maximum)
+        .toDouble();
+  }
 
-            return GestureDetector(
-              onScaleStart: (_) {
-                if (!_isProgrammaticMove) {
-                  _hasUserMoved = true;
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        _viewportSize = Size(constraints.maxWidth, constraints.maxHeight);
+        final layout = OfflinePlotCanvasLayout.build(
+          savedPlots: widget.savedPlots,
+          draftPoints: widget.draftPoints,
+          mode: widget.mode,
+          viewportSize: _viewportSize,
+        );
+        final minScale = _minimumZoomScale(layout);
+        final maxScale = _maximumZoomScale(layout);
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (layout.hasContent && !_hasUserMoved && !_hasFitInitialView) {
+            _resetView(
+              showOverview: widget.mode != PlotMapMode.recording ||
+                  widget.draftPoints.isEmpty,
+            );
+            return;
+          }
+          _clampTransform();
+        });
+
+        return GestureDetector(
+          onScaleStart: (_) {
+            if (!_isProgrammaticMove) {
+              _hasUserMoved = true;
+            }
+          },
+          child: InteractiveViewer(
+            transformationController: _controller,
+            constrained: false,
+            minScale: minScale,
+            maxScale: maxScale,
+            boundaryMargin: EdgeInsets.zero,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTapUp: (details) {
+                for (final item in layout.savedItems.reversed) {
+                  if (item.path.contains(details.localPosition)) {
+                    widget.onPlotSelected(item.plot);
+                    return;
+                  }
                 }
+                widget.onPlotSelected(null);
               },
-              child: InteractiveViewer(
-                transformationController: _controller,
-                constrained: false,
-                minScale: 0.05,
-                maxScale: 20.0,
-                boundaryMargin: const EdgeInsets.all(240),
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTapUp: (details) {
-                    for (final item in layout.savedItems.reversed) {
-                      if (item.path.contains(details.localPosition)) {
-                        widget.onPlotSelected(item.plot);
-                        return;
-                      }
-                    }
-                    widget.onPlotSelected(null);
-                  },
-                  child: CustomPaint(
-                    size: OfflinePlotCanvasLayout.canvasSize,
-                    painter: OfflinePlotCanvasPainter(
-                      layout: layout,
-                      selectedPlotId: widget.selectedPlotId,
-                      viewportScale: _currentScale,
-                    ),
+              child: CustomPaint(
+                size: layout.canvasSize,
+                painter: OfflinePlotCanvasPainter(
+                  layout: layout,
+                  selectedPlotId: widget.selectedPlotId,
+                  viewportScale: _currentScale,
+                  visibleBounds: MatrixUtils.transformRect(
+                    Matrix4.inverted(_controller.value),
+                    Offset.zero & _viewportSize,
                   ),
                 ),
-              ),
-            );
-          },
-        ),
-        if (widget.mode == PlotMapMode.recording)
-          Positioned(
-            right: 8,
-            top: 8,
-            child: Material(
-              color: Colors.white.withValues(alpha: 0.92),
-              shape: const CircleBorder(),
-              child: IconButton(
-                tooltip: 'Reset tampilan',
-                icon: const Icon(Icons.my_location),
-                onPressed: _resetView,
+                child: layout.hasContent
+                    ? null
+                    : SizedBox(
+                        width: layout.canvasSize.width,
+                        height: layout.canvasSize.height,
+                        child: Center(child: Text('Tidak ada pratinjau')),
+                      ),
               ),
             ),
           ),
-      ],
+        );
+      },
     );
   }
 }
@@ -224,6 +372,7 @@ class OfflinePlotCanvasItem {
     required this.path,
     required this.center,
     required this.bounds,
+    this.shortestEdgeLength,
   });
 
   final int index;
@@ -231,53 +380,76 @@ class OfflinePlotCanvasItem {
   final Path path;
   final Offset center;
   final Rect bounds;
+  final double? shortestEdgeLength;
 }
 
 class OfflinePlotCanvasLayout {
   const OfflinePlotCanvasLayout({
+    required this.canvasSize,
     required this.savedItems,
     required this.draftPath,
     required this.draftOffsets,
     required this.draftBounds,
     required this.allBounds,
+    required this.smallestPlotBounds,
   });
 
-  static const Size canvasSize = Size(1400, 1400);
-  static const double padding = 120;
+  static const double baseCanvasWidth = 4200;
+  static const double minimumCanvasHeight = 4200;
+
+  final Size canvasSize;
 
   final List<OfflinePlotCanvasItem> savedItems;
   final Path? draftPath;
   final List<Offset> draftOffsets;
   final Rect? draftBounds;
   final Rect? allBounds;
+  final Rect? smallestPlotBounds;
+
+  double get padding => canvasSize.shortestSide * 0.12;
 
   bool get hasContent => allBounds != null;
+
+  double? get shortestSavedEdgeLength {
+    double? shortest;
+    for (final item in savedItems) {
+      final length = item.shortestEdgeLength;
+      if (length != null && (shortest == null || length < shortest)) {
+        shortest = length;
+      }
+    }
+    return shortest;
+  }
 
   static OfflinePlotCanvasLayout build({
     required List<SavedPlot> savedPlots,
     required List<PlotPoint> draftPoints,
     required PlotMapMode mode,
+    required Size viewportSize,
   }) {
+    final canvasSize = _canvasSizeForViewport(viewportSize);
     final allPoints = <PlotPoint>[
       for (final plot in savedPlots) ...plot.points,
       ...draftPoints,
     ];
 
     if (allPoints.isEmpty) {
-      return const OfflinePlotCanvasLayout(
+      return OfflinePlotCanvasLayout(
+        canvasSize: canvasSize,
         savedItems: <OfflinePlotCanvasItem>[],
         draftPath: null,
         draftOffsets: <Offset>[],
         draftBounds: null,
         allBounds: null,
+        smallestPlotBounds: null,
       );
     }
 
-    final referencePoints =
-        mode == PlotMapMode.recording && draftPoints.isNotEmpty
-            ? draftPoints
-            : allPoints;
-    final mapper = _CanvasPointMapper(referencePoints);
+    final mapper = _CanvasPointMapper(
+      allPoints,
+      canvasSize: canvasSize,
+      padding: canvasSize.shortestSide * 0.12,
+    );
     final savedItems = savedPlots.asMap().entries.where((entry) {
       return entry.value.points.isNotEmpty;
     }).map((entry) {
@@ -289,6 +461,7 @@ class OfflinePlotCanvasLayout {
         path: path,
         center: _centerOf(offsets),
         bounds: _boundsOf(offsets),
+        shortestEdgeLength: _shortestEdgeLength(offsets),
       );
     }).toList();
 
@@ -300,16 +473,34 @@ class OfflinePlotCanvasLayout {
           )
         : null;
 
+    final smallestPlotBounds = _smallestPlotBounds(savedItems);
+
     return OfflinePlotCanvasLayout(
+      canvasSize: canvasSize,
       savedItems: savedItems,
       draftPath: draftPath,
       draftOffsets: draftOffsets,
-      draftBounds: draftOffsets.isEmpty ? null : _boundsOf(draftOffsets),
+      draftBounds:
+          draftOffsets.isEmpty ? null : _draftBoundsOf(draftOffsets, mapper),
       allBounds: _boundsOf(<Offset>[
         for (final item in savedItems) ..._pathApproximation(item.path),
         ...draftOffsets,
       ]),
+      smallestPlotBounds: smallestPlotBounds,
     );
+  }
+
+  static Size _canvasSizeForViewport(Size viewportSize) {
+    if (viewportSize.width <= 0 || viewportSize.height <= 0) {
+      return const Size(baseCanvasWidth, minimumCanvasHeight);
+    }
+
+    final viewportAspect = viewportSize.width / viewportSize.height;
+    final canvasHeight = math.max(
+      baseCanvasWidth / viewportAspect,
+      minimumCanvasHeight,
+    );
+    return Size(baseCanvasWidth, canvasHeight);
   }
 
   static Path _pathFromOffsets(List<Offset> offsets, {required bool close}) {
@@ -329,7 +520,7 @@ class OfflinePlotCanvasLayout {
       bounds.topLeft,
       bounds.topRight,
       bounds.bottomLeft,
-      bounds.bottomRight
+      bounds.bottomRight,
     ];
   }
 
@@ -339,12 +530,40 @@ class OfflinePlotCanvasLayout {
     return Offset(dx / offsets.length, dy / offsets.length);
   }
 
+  static Rect? _smallestPlotBounds(List<OfflinePlotCanvasItem> savedItems) {
+    Rect? smallestBounds;
+    double? smallestArea;
+    for (final item in savedItems) {
+      final area = item.bounds.width * item.bounds.height;
+      if (smallestArea == null || area < smallestArea) {
+        smallestArea = area;
+        smallestBounds = item.bounds;
+      }
+    }
+    return smallestBounds;
+  }
+
+  static double? _shortestEdgeLength(List<Offset> offsets) {
+    if (offsets.length < PlotGeometry.requiredPointCount) return null;
+    double? shortest;
+    for (var i = 0; i < offsets.length; i++) {
+      final length = (offsets[(i + 1) % offsets.length] - offsets[i]).distance;
+      // Ignore duplicate vertices and numerically degenerate edges.
+      if (length.isFinite &&
+          length > 1e-6 &&
+          (shortest == null || length < shortest)) {
+        shortest = length;
+      }
+    }
+    return shortest;
+  }
+
   static Rect _boundsOf(List<Offset> offsets) {
     final minX = offsets.map((offset) => offset.dx).reduce(math.min);
     final maxX = offsets.map((offset) => offset.dx).reduce(math.max);
     final minY = offsets.map((offset) => offset.dy).reduce(math.min);
     final maxY = offsets.map((offset) => offset.dy).reduce(math.max);
-    const minimumSpan = 80.0;
+    const minimumSpan = 240.0;
     final widthPadding = math.max((maxX - minX) * 0.2, minimumSpan);
     final heightPadding = math.max((maxY - minY) * 0.2, minimumSpan);
 
@@ -355,11 +574,30 @@ class OfflinePlotCanvasLayout {
       maxY + heightPadding,
     );
   }
+
+  static Rect _draftBoundsOf(List<Offset> offsets, _CanvasPointMapper mapper) {
+    final bounds = Rect.fromLTRB(
+      offsets.map((p) => p.dx).reduce(math.min),
+      offsets.map((p) => p.dy).reduce(math.min),
+      offsets.map((p) => p.dx).reduce(math.max),
+      offsets.map((p) => p.dy).reduce(math.max),
+    );
+    if (bounds.width == 0 && bounds.height == 0) {
+      // About 33 metres in latitude: a useful near view for the first GPS fix
+      // (or coincident fixes), independent of how far saved plots are spread.
+      final span = mapper.unitsPerDegree * 0.0003;
+      return Rect.fromCenter(center: bounds.center, width: span, height: span);
+    }
+    return bounds;
+  }
 }
 
 class _CanvasPointMapper {
-  _CanvasPointMapper(List<PlotPoint> points)
-      : this._(
+  _CanvasPointMapper(
+    List<PlotPoint> points, {
+    required Size canvasSize,
+    required double padding,
+  }) : this._(
           _expandRange(
             points.map((point) => point.latitude).reduce(math.min),
             points.map((point) => point.latitude).reduce(math.max),
@@ -368,11 +606,15 @@ class _CanvasPointMapper {
             points.map((point) => point.longitude).reduce(math.min),
             points.map((point) => point.longitude).reduce(math.max),
           ),
+          canvasSize,
+          padding,
         );
 
   _CanvasPointMapper._(
     _ExpandedCoordinateRange latitudeRange,
     _ExpandedCoordinateRange longitudeRange,
+    this.canvasSize,
+    this.padding,
   )   : minLatitude = latitudeRange.min,
         maxLatitude = latitudeRange.max,
         minLongitude = longitudeRange.min,
@@ -382,6 +624,8 @@ class _CanvasPointMapper {
   final double maxLatitude;
   final double minLongitude;
   final double maxLongitude;
+  final Size canvasSize;
+  final double padding;
 
   static _ExpandedCoordinateRange _expandRange(
     double minValue,
@@ -395,30 +639,24 @@ class _CanvasPointMapper {
     return _ExpandedCoordinateRange(minValue - halfSpan, maxValue + halfSpan);
   }
 
+  double get unitsPerDegree => math.min(
+        (canvasSize.width - padding * 2) / (maxLongitude - minLongitude),
+        (canvasSize.height - padding * 2) / (maxLatitude - minLatitude),
+      );
+
   Offset map(PlotPoint point) {
     final latitudeRange = maxLatitude - minLatitude;
     final longitudeRange = maxLongitude - minLongitude;
 
-    final usableWidth = OfflinePlotCanvasLayout.canvasSize.width -
-        OfflinePlotCanvasLayout.padding * 2;
-    final usableHeight = OfflinePlotCanvasLayout.canvasSize.height -
-        OfflinePlotCanvasLayout.padding * 2;
-    final scale = math.min(
-      usableWidth / longitudeRange,
-      usableHeight / latitudeRange,
-    );
+    final scale = unitsPerDegree;
     final contentWidth = longitudeRange * scale;
     final contentHeight = latitudeRange * scale;
-    final offsetX =
-        (OfflinePlotCanvasLayout.canvasSize.width - contentWidth) / 2;
-    final offsetY =
-        (OfflinePlotCanvasLayout.canvasSize.height - contentHeight) / 2;
+    final offsetX = (canvasSize.width - contentWidth) / 2;
+    final offsetY = (canvasSize.height - contentHeight) / 2;
 
     return Offset(
       offsetX + (point.longitude - minLongitude) * scale,
-      OfflinePlotCanvasLayout.canvasSize.height -
-          offsetY -
-          (point.latitude - minLatitude) * scale,
+      canvasSize.height - offsetY - (point.latitude - minLatitude) * scale,
     );
   }
 }
@@ -435,30 +673,17 @@ class OfflinePlotCanvasPainter extends CustomPainter {
     required this.layout,
     required this.selectedPlotId,
     required this.viewportScale,
+    this.visibleBounds,
   });
 
   final OfflinePlotCanvasLayout layout;
   final String? selectedPlotId;
   final double viewportScale;
+  final Rect? visibleBounds;
 
   @override
   void paint(Canvas canvas, Size size) {
-    canvas.drawRect(
-      Offset.zero & size,
-      Paint()
-        ..color = Colors.white
-        ..style = PaintingStyle.fill,
-    );
-
-    final gridPaint = Paint()
-      ..color = Colors.grey.shade300
-      ..strokeWidth = 1;
-    for (double x = 0; x <= size.width; x += 100) {
-      canvas.drawLine(Offset(x, 0), Offset(x, size.height), gridPaint);
-    }
-    for (double y = 0; y <= size.height; y += 100) {
-      canvas.drawLine(Offset(0, y), Offset(size.width, y), gridPaint);
-    }
+    _drawGrid(canvas, size);
 
     for (final item in layout.savedItems) {
       final isSelected = item.plot.id == selectedPlotId;
@@ -515,6 +740,72 @@ class OfflinePlotCanvasPainter extends CustomPainter {
 
   double get _normalizedScale => viewportScale <= 0 ? 1 : viewportScale;
 
+  void _drawGrid(Canvas canvas, Size size) {
+    canvas.drawRect(
+      Offset.zero & size,
+      Paint()
+        ..color = Colors.white
+        ..style = PaintingStyle.fill,
+    );
+
+    final minorGridPaint = Paint()
+      ..color = Colors.grey.shade200
+      ..strokeWidth = 1 / _normalizedScale;
+    final majorGridPaint = Paint()
+      ..color = Colors.grey.shade300
+      ..strokeWidth = 1 / _normalizedScale;
+
+    final minorStep = _niceGridStep(34 / _normalizedScale);
+    final majorStep = minorStep * 5;
+    final visible = (visibleBounds ?? (Offset.zero & size))
+        .inflate(minorStep)
+        .intersect(Offset.zero & size);
+    if (visible.isEmpty) return;
+
+    for (double x = (visible.left / minorStep).floor() * minorStep;
+        x <= visible.right;
+        x += minorStep) {
+      final paint =
+          _isMajorGridLine(x, majorStep) ? majorGridPaint : minorGridPaint;
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
+    }
+    for (double y = (visible.top / minorStep).floor() * minorStep;
+        y <= visible.bottom;
+        y += minorStep) {
+      final paint =
+          _isMajorGridLine(y, majorStep) ? majorGridPaint : minorGridPaint;
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
+    }
+  }
+
+  double _niceGridStep(double rawStep) {
+    if (rawStep <= 0) {
+      return 50;
+    }
+
+    final exponent = math.pow(
+      10,
+      (math.log(rawStep) / math.ln10).floor(),
+    );
+    final normalized = rawStep / exponent;
+    final niceMultiplier = normalized <= 1
+        ? 1
+        : normalized <= 2
+            ? 2
+            : normalized <= 5
+                ? 5
+                : 10;
+    return niceMultiplier * exponent.toDouble();
+  }
+
+  bool _isMajorGridLine(double value, double majorStep) {
+    if (majorStep <= 0) {
+      return false;
+    }
+    final nearest = (value / majorStep).round() * majorStep;
+    return (value - nearest).abs() < 0.001;
+  }
+
   void _drawBadge(Canvas canvas, Offset center, String text, Color color) {
     final radius = 14 / _normalizedScale;
     final fontSize = 12 / _normalizedScale;
@@ -544,6 +835,7 @@ class OfflinePlotCanvasPainter extends CustomPainter {
   bool shouldRepaint(covariant OfflinePlotCanvasPainter oldDelegate) {
     return oldDelegate.layout != layout ||
         oldDelegate.selectedPlotId != selectedPlotId ||
-        oldDelegate.viewportScale != viewportScale;
+        oldDelegate.viewportScale != viewportScale ||
+        oldDelegate.visibleBounds != visibleBounds;
   }
 }

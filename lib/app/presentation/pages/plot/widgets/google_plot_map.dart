@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:digital_shores/app/presentation/pages/plot/map/plot_map_bounds.dart';
 import 'package:digital_shores/app/presentation/pages/plot/map/plot_map_mode.dart';
 import 'package:digital_shores/app/presentation/pages/plot/models/plot_point.dart';
@@ -17,6 +19,7 @@ class GooglePlotMap extends StatefulWidget {
     required this.selectedPlotId,
     required this.onPlotSelected,
     this.onMapReady,
+    this.resetSignal = 0,
   });
 
   final List<SavedPlot> savedPlots;
@@ -25,6 +28,7 @@ class GooglePlotMap extends StatefulWidget {
   final String? selectedPlotId;
   final ValueChanged<SavedPlot?> onPlotSelected;
   final VoidCallback? onMapReady;
+  final int resetSignal;
 
   @override
   State<GooglePlotMap> createState() => _GooglePlotMapState();
@@ -40,6 +44,9 @@ class _GooglePlotMapState extends State<GooglePlotMap> {
   void didUpdateWidget(covariant GooglePlotMap oldWidget) {
     super.didUpdateWidget(oldWidget);
 
+    if (widget.resetSignal != oldWidget.resetSignal) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _resetCamera());
+    }
     if (_shouldRefreshCamera()) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _resetCamera());
     }
@@ -134,6 +141,83 @@ class _GooglePlotMapState extends State<GooglePlotMap> {
       return null;
     }
     return PlotMapBounds.fromPoints(visiblePoints);
+  }
+
+  PlotMapBounds? _allVisibleBounds() {
+    final visiblePoints = collectVisiblePlotPoints(
+      draftPoints: widget.draftPoints,
+      savedPlotPoints: widget.savedPlots.map((plot) => plot.points),
+    );
+    if (visiblePoints.isEmpty) {
+      return null;
+    }
+    return PlotMapBounds.fromPoints(visiblePoints);
+  }
+
+  PlotMapBounds? _smallestSavedPlotBounds() {
+    PlotMapBounds? smallestBounds;
+    double? smallestArea;
+    for (final plot in widget.savedPlots) {
+      if (plot.points.length < PlotGeometry.requiredPointCount) {
+        continue;
+      }
+      final bounds = PlotMapBounds.fromPoints(plot.points);
+      final area = bounds.latitudeSpan * bounds.longitudeSpan;
+      if (smallestArea == null || area < smallestArea) {
+        smallestArea = area;
+        smallestBounds = bounds;
+      }
+    }
+    return smallestBounds;
+  }
+
+  MinMaxZoomPreference _zoomPreference() {
+    final allBounds = _allVisibleBounds();
+    final minimumZoom = allBounds == null ? 2.0 : _zoomToFit(allBounds);
+    final smallestBounds = _smallestSavedPlotBounds();
+    final maximumZoom = smallestBounds == null
+        ? 21.0
+        : math.max(_zoomToFit(smallestBounds), minimumZoom);
+    return MinMaxZoomPreference(minimumZoom, maximumZoom);
+  }
+
+  CameraTargetBounds _cameraTargetBounds() {
+    final bounds = _allVisibleBounds();
+    if (bounds == null) {
+      return CameraTargetBounds.unbounded;
+    }
+    return CameraTargetBounds(bounds.expandedForDisplay().toGoogleBounds());
+  }
+
+  double _zoomToFit(PlotMapBounds bounds) {
+    if (_viewportSize == Size.zero) {
+      return 17;
+    }
+
+    final padding = _cameraPadding;
+    final availableWidth = math.max(_viewportSize.width - padding * 2, 1.0);
+    final availableHeight = math.max(_viewportSize.height - padding * 2, 1.0);
+    final latFraction =
+        (_latRadians(bounds.maxLatitude) - _latRadians(bounds.minLatitude))
+                .abs() /
+            math.pi;
+    final lngFraction = bounds.longitudeSpan.abs() / 360;
+    final latZoom = _zoom(availableHeight, latFraction);
+    final lngZoom = _zoom(availableWidth, lngFraction);
+    return math.min(latZoom, lngZoom).clamp(2.0, 21.0).toDouble();
+  }
+
+  double _latRadians(double latitude) {
+    final sinValue = math.sin(latitude * math.pi / 180);
+    final radians = math.log((1 + sinValue) / (1 - sinValue)) / 2;
+    return radians.clamp(-math.pi, math.pi).toDouble() / 2;
+  }
+
+  double _zoom(double mapPx, double fraction) {
+    if (fraction <= 0) {
+      return 21;
+    }
+    return math.log(mapPx / 256 / fraction) / math.ln2;
   }
 
   Set<Polygon> _buildPolygons() {
@@ -238,9 +322,14 @@ class _GooglePlotMapState extends State<GooglePlotMap> {
               myLocationButtonEnabled: false,
               mapToolbarEnabled: false,
               compassEnabled: false,
-              zoomControlsEnabled: true,
+              zoomControlsEnabled: false,
               rotateGesturesEnabled: false,
               tiltGesturesEnabled: false,
+              minMaxZoomPreference: _zoomPreference(),
+              cameraTargetBounds: _cameraTargetBounds(),
+              padding: widget.mode == PlotMapMode.recording
+                  ? const EdgeInsets.fromLTRB(0, 96, 0, 150)
+                  : EdgeInsets.zero,
               gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
                 Factory<EagerGestureRecognizer>(() => EagerGestureRecognizer()),
               },
@@ -252,20 +341,6 @@ class _GooglePlotMapState extends State<GooglePlotMap> {
               },
               onTap: (_) => widget.onPlotSelected(null),
             ),
-            if (widget.mode == PlotMapMode.recording)
-              Positioned(
-                right: 8,
-                top: 8,
-                child: Material(
-                  color: Colors.white.withValues(alpha: 0.92),
-                  shape: const CircleBorder(),
-                  child: IconButton(
-                    tooltip: 'Reset tampilan',
-                    icon: const Icon(Icons.my_location),
-                    onPressed: _resetCamera,
-                  ),
-                ),
-              ),
           ],
         );
       },
