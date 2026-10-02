@@ -6,7 +6,7 @@ class SeaweedInformationCard extends StatelessWidget {
     super.key,
     required this.title,
     required this.content,
-    required this.iconName,
+    required this.imageUrl,
     required this.isSuperAdmin,
     required this.dragIndex,
     required this.onEdit,
@@ -15,7 +15,7 @@ class SeaweedInformationCard extends StatelessWidget {
 
   final String title;
   final String content;
-  final String iconName;
+  final String imageUrl;
   final bool isSuperAdmin;
   final int dragIndex;
   final VoidCallback onEdit;
@@ -30,29 +30,37 @@ class SeaweedInformationCard extends StatelessWidget {
       margin: const EdgeInsets.only(
         bottom: 16,
       ),
-      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: primaryColor.withOpacity(0.08),
-        borderRadius:
-            BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(
           color: primaryColor.withOpacity(0.35),
         ),
       ),
-      child: Row(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CircleAvatar(
-            radius: 24,
-            backgroundColor: primaryColor,
-            child: Icon(
-              seaweedIconFromName(iconName),
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
+          // Uploaded image
+          if (imageUrl.isNotEmpty)
+            Image.network(
+              imageUrl,
+              height: 180,
+              width: double.infinity,
+              fit: BoxFit.cover,
+              errorBuilder: (
+                context,
+                error,
+                stackTrace,
+              ) {
+                return _imagePlaceholder();
+              },
+            )
+          else
+            _imagePlaceholder(),
+
+          Padding(
+            padding: const EdgeInsets.all(18),
             child: Column(
               crossAxisAlignment:
                   CrossAxisAlignment.start,
@@ -65,6 +73,7 @@ class SeaweedInformationCard extends StatelessWidget {
                         style: kTitle6TextStyle,
                       ),
                     ),
+
                     if (isSuperAdmin)
                       ReorderableDragStartListener(
                         index: dragIndex,
@@ -76,6 +85,7 @@ class SeaweedInformationCard extends StatelessWidget {
                           ),
                         ),
                       ),
+
                     if (isSuperAdmin)
                       PopupMenuButton<String>(
                         onSelected: (value) {
@@ -87,7 +97,8 @@ class SeaweedInformationCard extends StatelessWidget {
                             onDelete();
                           }
                         },
-                        itemBuilder: (context) => const [
+                        itemBuilder: (context) =>
+                            const [
                           PopupMenuItem(
                             value: 'edit',
                             child: Row(
@@ -112,7 +123,9 @@ class SeaweedInformationCard extends StatelessWidget {
                       ),
                   ],
                 ),
+
                 const SizedBox(height: 8),
+
                 Text(
                   content,
                   style: const TextStyle(
@@ -127,37 +140,19 @@ class SeaweedInformationCard extends StatelessWidget {
       ),
     );
   }
-}
 
-IconData seaweedIconFromName(
-  String name,
-) {
-  switch (name) {
-    case 'grass':
-      return Icons.grass;
-
-    case 'eco':
-      return Icons.eco;
-
-    case 'water':
-      return Icons.water_drop;
-
-    case 'waves':
-      return Icons.waves;
-
-    case 'book':
-      return Icons.menu_book;
-
-    case 'lightbulb':
-      return Icons.lightbulb_outline;
-
-    case 'warning':
-      return Icons.warning_amber;
-
-    case 'science':
-      return Icons.science;
-
-    default:
-      return Icons.info_outline;
+  Widget _imagePlaceholder() {
+    return Container(
+      height: 180,
+      width: double.infinity,
+      color: Colors.grey.shade200,
+      child: const Center(
+        child: Icon(
+          Icons.image_outlined,
+          size: 55,
+          color: Colors.grey,
+        ),
+      ),
+    );
   }
 }

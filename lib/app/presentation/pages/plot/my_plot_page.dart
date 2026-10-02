@@ -1,10 +1,14 @@
+import 'dart:typed_data';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:digital_shores/app/presentation/pages/plot/seaweed_information_card.dart';
 import 'package:digital_shores/app/presentation/pages/plot/seaweed_information_dialog.dart';
 import 'package:digital_shores/app/presentation/provider/auth_notifier.dart';
 import 'package:digital_shores/app/presentation/widgets/global/transparent_app_bar.dart';
 import 'package:digital_shores/core/constants.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 class MyPlotPage extends StatelessWidget {
@@ -48,6 +52,7 @@ class MyPlotPage extends StatelessWidget {
               ],
             ),
           ),
+
           const Padding(
             padding: EdgeInsets.symmetric(
               horizontal: kDefaultPadding,
@@ -63,11 +68,15 @@ class MyPlotPage extends StatelessWidget {
               ),
             ),
           ),
+
           const SizedBox(height: 16),
+
           Expanded(
             child: StreamBuilder<
                 QuerySnapshot<Map<String, dynamic>>>(
-              stream: _collection.orderBy('order').snapshots(),
+              stream: _collection
+                  .orderBy('order')
+                  .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState ==
                     ConnectionState.waiting) {
@@ -77,6 +86,11 @@ class MyPlotPage extends StatelessWidget {
                 }
 
                 if (snapshot.hasError) {
+                  debugPrint(
+                    'Seaweed information error: '
+                    '${snapshot.error}',
+                  );
+
                   return const Center(
                     child: Text(
                       'Gagal memuat informasi.',
@@ -84,19 +98,22 @@ class MyPlotPage extends StatelessWidget {
                   );
                 }
 
-                final documents = snapshot.data?.docs ?? [];
+                final documents =
+                    snapshot.data?.docs ?? [];
 
                 if (documents.isEmpty) {
                   return Center(
                     child: Text(
                       isSuperAdmin
-                          ? 'Belum ada informasi.\nTekan Tambah untuk membuat informasi.'
+                          ? 'Belum ada informasi.\n'
+                              'Tekan Tambah untuk membuat informasi.'
                           : 'Belum ada informasi.',
                       textAlign: TextAlign.center,
                     ),
                   );
                 }
 
+                // Super Admin can reorder cards.
                 if (isSuperAdmin) {
                   return ReorderableListView.builder(
                     padding: const EdgeInsets.symmetric(
@@ -122,6 +139,7 @@ class MyPlotPage extends StatelessWidget {
                   );
                 }
 
+                // Normal users can only view the cards.
                 return ListView.builder(
                   padding: const EdgeInsets.symmetric(
                     horizontal: kDefaultPadding,
@@ -144,49 +162,106 @@ class MyPlotPage extends StatelessWidget {
     );
   }
 
+  // ------------------------------------------------------------
+  // BUILD INFORMATION CARD
+  // ------------------------------------------------------------
+
   Widget _buildCard(
     BuildContext context,
-    QueryDocumentSnapshot<Map<String, dynamic>> document,
+    QueryDocumentSnapshot<Map<String, dynamic>>
+        document,
     int index,
     bool isSuperAdmin,
   ) {
     final data = document.data();
 
-    final title = data['title']?.toString() ?? '';
-    final content = data['content']?.toString() ?? '';
-    final icon = data['icon']?.toString() ?? 'info';
+    final title =
+        data['title']?.toString() ?? '';
+
+    final content =
+        data['content']?.toString() ?? '';
+
+    final imageUrl =
+        data['imageUrl']?.toString() ?? '';
 
     return SeaweedInformationCard(
       key: ValueKey(document.id),
       title: title,
       content: content,
-      iconName: icon,
+      imageUrl: imageUrl,
       isSuperAdmin: isSuperAdmin,
       dragIndex: index,
+
+      // EDIT
       onEdit: () {
         _editInformation(
           context,
           document.reference,
           title,
           content,
-          icon,
+          imageUrl,
         );
       },
+
+      // DELETE
       onDelete: () {
         _deleteInformation(
           context,
           document.reference,
           title,
+          imageUrl,
         );
       },
     );
   }
 
+  // ------------------------------------------------------------
+  // UPLOAD IMAGE TO FIREBASE STORAGE
+  // ------------------------------------------------------------
+
+  Future<String> _uploadImage(
+    XFile image,
+  ) async {
+    final Uint8List bytes =
+        await image.readAsBytes();
+
+    // Give every uploaded image a unique name.
+    final String fileName =
+        '${DateTime.now().millisecondsSinceEpoch}_${image.name}';
+
+    final Reference storageReference =
+        FirebaseStorage.instance
+            .ref()
+            .child('seaweed_information')
+            .child(fileName);
+
+    // Upload the selected image.
+    await storageReference.putData(
+      bytes,
+      SettableMetadata(
+        contentType:
+            image.mimeType ?? 'image/jpeg',
+      ),
+    );
+
+    // Get the URL used by the Flutter app
+    // to display the image.
+    final String downloadUrl =
+        await storageReference
+            .getDownloadURL();
+
+    return downloadUrl;
+  }
+
+  // ------------------------------------------------------------
+  // ADD INFORMATION
+  // ------------------------------------------------------------
+
   Future<void> _addInformation(
     BuildContext context,
   ) async {
     final result =
-        await showDialog<Map<String, String>>(
+        await showDialog<Map<String, dynamic>>(
       context: context,
       builder: (context) {
         return const SeaweedInformationDialog(
@@ -195,18 +270,47 @@ class MyPlotPage extends StatelessWidget {
       },
     );
 
+    // User pressed Cancel.
     if (result == null) {
       return;
     }
 
     try {
-      final lastDocument = await _collection
-          .orderBy(
-            'order',
-            descending: true,
-          )
-          .limit(1)
-          .get();
+      final XFile? selectedImage =
+          result['image'] as XFile?;
+
+      if (selectedImage == null) {
+        if (!context.mounted) {
+          return;
+        }
+
+        ScaffoldMessenger.of(context)
+            .showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Silakan pilih gambar.',
+            ),
+          ),
+        );
+
+        return;
+      }
+
+      // 1. Upload image to Firebase Storage.
+      final String imageUrl =
+          await _uploadImage(
+        selectedImage,
+      );
+
+      // 2. Find the current highest order.
+      final lastDocument =
+          await _collection
+              .orderBy(
+                'order',
+                descending: true,
+              )
+              .limit(1)
+              .get();
 
       int nextOrder = 0;
 
@@ -223,10 +327,11 @@ class MyPlotPage extends StatelessWidget {
         }
       }
 
+      // 3. Save information to Firestore.
       await _collection.add({
         'title': result['title'],
         'content': result['content'],
-        'icon': result['icon'],
+        'imageUrl': imageUrl,
         'order': nextOrder,
       });
 
@@ -234,7 +339,8 @@ class MyPlotPage extends StatelessWidget {
         return;
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
         const SnackBar(
           content: Text(
             'Informasi berhasil ditambahkan.',
@@ -250,7 +356,8 @@ class MyPlotPage extends StatelessWidget {
         return;
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
         const SnackBar(
           content: Text(
             'Gagal menambahkan informasi.',
@@ -260,47 +367,102 @@ class MyPlotPage extends StatelessWidget {
     }
   }
 
+  // ------------------------------------------------------------
+  // EDIT INFORMATION
+  // ------------------------------------------------------------
+
   Future<void> _editInformation(
     BuildContext context,
-    DocumentReference<Map<String, dynamic>> reference,
+    DocumentReference<Map<String, dynamic>>
+        reference,
     String title,
     String content,
-    String icon,
+    String currentImageUrl,
   ) async {
     final result =
-        await showDialog<Map<String, String>>(
+        await showDialog<Map<String, dynamic>>(
       context: context,
       builder: (context) {
         return SeaweedInformationDialog(
           dialogTitle: 'Edit Informasi',
           initialTitle: title,
           initialContent: content,
-          initialIcon: icon,
+          initialImageUrl:
+              currentImageUrl,
         );
       },
     );
 
+    // User pressed Cancel.
     if (result == null) {
       return;
     }
 
     try {
+      // Keep existing image by default.
+      String imageUrl =
+          currentImageUrl;
+
+      final XFile? newImage =
+          result['image'] as XFile?;
+
+      // If Super Admin selected a new image,
+      // upload it and replace the old URL.
+      if (newImage != null) {
+      imageUrl = await _uploadImage(
+        newImage,
+        );
+      }
+
+      // Update Firestore.
       await reference.update({
         'title': result['title'],
         'content': result['content'],
-        'icon': result['icon'],
+        'imageUrl': imageUrl,
       });
+
+      if (!context.mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Informasi berhasil diperbarui.',
+          ),
+        ),
+      );
     } catch (e) {
       debugPrint(
         'Edit information error: $e',
       );
+
+      if (!context.mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Gagal memperbarui informasi.',
+          ),
+        ),
+      );
     }
   }
 
+  // ------------------------------------------------------------
+  // DELETE INFORMATION
+  // ------------------------------------------------------------
+
   Future<void> _deleteInformation(
     BuildContext context,
-    DocumentReference<Map<String, dynamic>> reference,
+    DocumentReference<Map<String, dynamic>>
+        reference,
     String title,
+    String imageUrl,
   ) async {
     final confirmed =
         await showDialog<bool>(
@@ -321,7 +483,9 @@ class MyPlotPage extends StatelessWidget {
                   false,
                 );
               },
-              child: const Text('Batal'),
+              child: const Text(
+                'Batal',
+              ),
             ),
             ElevatedButton(
               onPressed: () {
@@ -330,20 +494,97 @@ class MyPlotPage extends StatelessWidget {
                   true,
                 );
               },
-              child: const Text('Hapus'),
+              child: const Text(
+                'Hapus',
+              ),
             ),
           ],
         );
       },
     );
 
-    if (confirmed == true) {
+    if (confirmed != true) {
+      return;
+    }
+
+    try {
+      // Delete Firestore document.
       await reference.delete();
+
+      // Delete associated image from
+      // Firebase Storage.
+      if (imageUrl.isNotEmpty) {
+        await _deleteImageFromStorage(
+          imageUrl,
+        );
+      }
+
+      if (!context.mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Informasi berhasil dihapus.',
+          ),
+        ),
+      );
+    } catch (e) {
+      debugPrint(
+        'Delete information error: $e',
+      );
+
+      if (!context.mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Gagal menghapus informasi.',
+          ),
+        ),
+      );
     }
   }
 
+  // ------------------------------------------------------------
+  // DELETE IMAGE FROM FIREBASE STORAGE
+  // ------------------------------------------------------------
+
+  Future<void> _deleteImageFromStorage(
+    String imageUrl,
+  ) async {
+    if (imageUrl.isEmpty) {
+      return;
+    }
+
+    try {
+      final Reference imageReference =
+          FirebaseStorage.instance
+              .refFromURL(imageUrl);
+
+      await imageReference.delete();
+    } catch (e) {
+      // Do not stop the whole operation if
+      // an old image cannot be deleted.
+      debugPrint(
+        'Delete Storage image error: $e',
+      );
+    }
+  }
+
+  // ------------------------------------------------------------
+  // REORDER INFORMATION
+  // ------------------------------------------------------------
+
   Future<void> _reorderInformation(
-    List<QueryDocumentSnapshot<Map<String, dynamic>>>
+    List<
+            QueryDocumentSnapshot<
+                Map<String, dynamic>>>
         documents,
     int oldIndex,
     int newIndex,
@@ -356,8 +597,9 @@ class MyPlotPage extends StatelessWidget {
       return;
     }
 
-    final reordered =
-        List<QueryDocumentSnapshot<Map<String, dynamic>>>.from(
+    final reordered = List<
+        QueryDocumentSnapshot<
+            Map<String, dynamic>>>.from(
       documents,
     );
 
@@ -383,6 +625,12 @@ class MyPlotPage extends StatelessWidget {
       );
     }
 
-    await batch.commit();
+    try {
+      await batch.commit();
+    } catch (e) {
+      debugPrint(
+        'Reorder information error: $e',
+      );
+    }
   }
 }
