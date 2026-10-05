@@ -23,11 +23,12 @@ class SeaweedFarmerHome extends StatelessWidget {
         label: 'Lahan saya',
         onTap: () => context.push('/home/plot-overview'),
       ),
-      _SeaweedMenuItem(
-        icon: Icons.task_alt,
-        label: 'Pilih lahan untuk memverifikasi',
-        onTap: () => context.push('/home/saved-plots'),
-      ),
+      if (isAdmin)
+        _SeaweedMenuItem(
+          icon: Icons.task_alt,
+          label: 'Pilih lahan untuk memverifikasi',
+          onTap: () => context.push('/home/saved-plots'),
+        ),
       if (isAdmin)
         _SeaweedMenuItem(
           icon: Icons.verified_user,
