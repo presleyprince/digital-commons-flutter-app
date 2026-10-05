@@ -311,34 +311,80 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
       return true;
     }
 
-    final shouldExit = await showDialog<bool>(
-      context: context,
-      builder: (context) {
-        final color = Theme.of(context).colorScheme;
+    final color = Theme.of(context).colorScheme;
 
-        return AlertDialog(
-          title: const Text('Lahan belum disimpan'),
-          content: const Text(
-            'Anda memiliki titik yang belum disimpan. Pilih Keluar untuk membuang titik tersebut atau tetap di halaman ini.',
-          ),
-          actions: [
-            OutlinedButton(
-              style: OutlinedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: color.primary,
-                side: BorderSide(color: color.primary),
+    final shouldExit = await showDialog<bool>(
+    context: context,
+    builder: (context) {
+      return Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 28, 24, 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(
+                Icons.warning_amber_rounded,
+                color: Colors.orange.shade600,
+                size: 40,
               ),
-              onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Keluar'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Tetap di halaman'),
-            ),
-          ],
-        );
-      },
-    );
+              const SizedBox(height: 16),
+              Text(
+                'Lahan belum disimpan',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: color.primary,
+                ),
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'Anda memiliki titik yang belum disimpan. Pilih Keluar untuk membuang titik tersebut atau tetap di halaman ini.',
+                style: TextStyle(fontSize: 15, height: 1.4),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: color.primary,
+                        side: BorderSide(color: color.primary),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                      ),
+                      onPressed: () => Navigator.of(context).pop(true),
+                      child: const Text('Keluar'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: FilledButton(
+                      style: FilledButton.styleFrom(
+                        backgroundColor: color.primary,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                      ),
+                      onPressed: () => Navigator.of(context).pop(false),
+                      child: const Text('Tetap di halaman'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
 
     return shouldExit ?? false;
   }
