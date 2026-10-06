@@ -97,7 +97,7 @@ class _SignupPageState extends State<SignupPage> {
                                   width: 40,
                                   child: Center(
                                     child: Text(
-                                      '+62',
+                                      '+61',
                                       textAlign: TextAlign.center,
                                       style: kSubtitle5TextStyle,
                                     ),

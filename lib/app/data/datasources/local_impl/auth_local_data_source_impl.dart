@@ -13,8 +13,8 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   @override
   Future<void> cacheToLocal(CacheUserToLocalParameter parameter) async {
     String phoneNumber = parameter.userData.phoneNumber;
-    if (phoneNumber.contains('+62')) {
-      phoneNumber = phoneNumber.replaceFirst('+62', '');
+    if (phoneNumber.contains('+61')) {
+      phoneNumber = phoneNumber.replaceFirst('+61', '');
     }
     await storage.setString('user_id', parameter.userData.id);
     await storage.setString('user', json.encode(parameter.userData.toJson()));

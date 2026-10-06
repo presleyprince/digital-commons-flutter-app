@@ -79,7 +79,7 @@ class _LoginPageState extends State<LoginPage> {
                                   width: 40,
                                   child: Center(
                                     child: Text(
-                                      '+62',
+                                      '+61',
                                       textAlign: TextAlign.center,
                                       style: kSubtitle5TextStyle,
                                     ),

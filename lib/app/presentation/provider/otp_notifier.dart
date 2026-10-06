@@ -72,7 +72,7 @@ class OtpNotifier extends ChangeNotifier {
       phoneNumber = phoneNumber.substring(1);
     }
 
-    return '+62$phoneNumber';
+    return '+61$phoneNumber';
   }
 
   Future<void> resendOtp() async {
