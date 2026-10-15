@@ -8,6 +8,7 @@ import 'package:digital_shores/core/utils/firebase_auth_exception_otp_parse.dart
 import 'package:digital_shores/core/utils/pin_hasher.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:digital_shores/core/enums.dart';
 
 class AuthRemoteDataSourceFirebase implements AuthRemoteDataSource {
   final FirebaseFirestore firestore;
@@ -143,6 +144,7 @@ class AuthRemoteDataSourceFirebase implements AuthRemoteDataSource {
       'phone_number': parameter.phoneNumber,
       'pin': hashedPin,
       'pin_salt': salt,
+      'role': UserRole.user.index, 
     });
 
     // create user data in firestore
@@ -150,6 +152,7 @@ class AuthRemoteDataSourceFirebase implements AuthRemoteDataSource {
       id: userDoc.id,
       fullName: parameter.fullName,
       phoneNumber: parameter.phoneNumber,
+      role: UserRole.user.index,
     );
     return userData;
   }
@@ -215,12 +218,14 @@ class AuthRemoteDataSourceFirebase implements AuthRemoteDataSource {
           'id': userId,
           'full_name': parameter.fullName,
           'phone_number': phoneNumber,
+          'role': UserRole.user.index,
         });
 
         userData = UserDataModel(
           id: userDoc.id,
           fullName: parameter.fullName!,
           phoneNumber: phoneNumber,
+          role: UserRole.user.index,
         );
       }
       // user login
