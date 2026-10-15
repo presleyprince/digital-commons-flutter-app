@@ -59,7 +59,7 @@ class _AdministrationPageState extends State<AdministrationPage> {
           CustomSnackbar.success(context, 'Berhasil menyinkronkan data di server');
         }
 
-        return Stack(
+       return Stack(
           children: [
             Scaffold(
               resizeToAvoidBottomInset: true,
@@ -69,31 +69,31 @@ class _AdministrationPageState extends State<AdministrationPage> {
               body: SafeArea(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: kDefaultPadding),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      AdministrationDocumentTypeFilter(notifier: notifier),
-                      AdministrationSearchBox(notifier: notifier),
-                      Expanded(
-                        child: notifier.dataEmpty()
-                            ? AdministrationNoDataColumn()
-                            : SingleChildScrollView(
-                                child: Column(
-                                  children: [
-                                    AdministrationActionButton(),
-                                    ListView.builder(
-                                      shrinkWrap: true,
-                                      physics: const NeverScrollableScrollPhysics(),
-                                      itemCount: notifier.documents.value.length,
-                                      itemBuilder: (context, index) {
-                                        final data = notifier.documents.value[index];
-                                        return AdministrationDocumentContainer(data: data);
-                                      },
-                                    ),
-                                  ],
-                                ),
-                              ),
+                  // fix overflow: opening keyboard doesn't squish the page
+                  child: CustomScrollView(
+                    slivers: [
+                      SliverToBoxAdapter(
+                        child: AdministrationDocumentTypeFilter(notifier: notifier),
                       ),
+                      SliverToBoxAdapter(
+                        child: AdministrationSearchBox(notifier: notifier),
+                      ),
+                      if (notifier.dataEmpty())
+                        SliverFillRemaining(
+                          child: AdministrationNoDataColumn(),
+                        )
+                      else ...[
+                        SliverToBoxAdapter(
+                          child: AdministrationActionButton(),
+                        ),
+                        SliverList.builder(
+                          itemCount: notifier.documents.value.length,
+                          itemBuilder: (context, index) {
+                            final data = notifier.documents.value[index];
+                            return AdministrationDocumentContainer(data: data);
+                          },
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -107,3 +107,4 @@ class _AdministrationPageState extends State<AdministrationPage> {
     );
   }
 }
+ 

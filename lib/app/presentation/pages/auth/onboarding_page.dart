@@ -32,54 +32,75 @@ class _OnboardingPageState extends State<OnboardingPage> {
         child: Column(
           children: [
             Expanded(
-              child: Center(
-                child: CarouselSlider(
-                  carouselController: notifier.carouselController,
-                  items: notifier.carouselItems.map(
-                    (carousel) {
-                      return Column(
-                        children: [
-                          Container(
-                            width: 288,
-                            height: 194,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(kDefaultRadius),
-                              image: DecorationImage(
-                                image: AssetImage(carousel.image),
-                                fit: BoxFit.cover,
-                              ),
+              // fix overflow: the carousel takes whatever height is left above
+              // the buttons instead of a fixed 450, and each slide can scroll
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return CarouselSlider(
+                    carouselController: notifier.carouselController,
+                    items: notifier.carouselItems.map(
+                      (carousel) {
+                        return SingleChildScrollView(
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(
+                              minHeight: constraints.maxHeight,
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Container(
+                                  width: 288,
+                                  height: 194,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(kDefaultRadius),
+                                    image: DecorationImage(
+                                      image: AssetImage(carousel.image),
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: kDefaultPadding,
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      Text(
+                                        carousel.title,
+                                        style: kTitle4TextStyle,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                      const SizedBox(height: 12),
+                                      Text(
+                                        carousel.description,
+                                        style: kSubtitle5TextStyle,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 36),
+                                Image.asset(
+                                  R.ASSETS_IMAGES_APP_LOGO_PNG,
+                                  height: 60,
+                                ),
+                              ],
                             ),
                           ),
-                          const SizedBox(height: 12),
-                          Text(
-                            carousel.title,
-                            style: kTitle4TextStyle,
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            carousel.description,
-                            style: kSubtitle5TextStyle,
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 36),
-                          Image.asset(
-                            R.ASSETS_IMAGES_APP_LOGO_PNG,
-                            height: 60,
-                          ),
-                        ],
-                      );
-                    },
-                  ).toList(),
-                  options: CarouselOptions(
-                    height: 450,
-                    viewportFraction: 1,
-                    onPageChanged: notifier.onPageChanged,
-                    autoPlay: true,
-                    pageSnapping: true,
-                    autoPlayCurve: Curves.fastOutSlowIn,
-                  ),
-                ),
+                        );
+                      },
+                    ).toList(),
+                    options: CarouselOptions(
+                      height: constraints.maxHeight,
+                      viewportFraction: 1,
+                      onPageChanged: notifier.onPageChanged,
+                      autoPlay: true,
+                      pageSnapping: true,
+                      autoPlayCurve: Curves.fastOutSlowIn,
+                    ),
+                  );
+                },
               ),
             ),
             ValueListenableBuilder<int>(

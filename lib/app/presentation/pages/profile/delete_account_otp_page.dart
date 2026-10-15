@@ -65,7 +65,8 @@ class _DeleteAccountOtpPageState extends State<DeleteAccountOtpPage> {
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: kDefaultPadding),
-              child: Column(
+              child: SingleChildScrollView(
+                child: Column(
                 children: [
                   Image.asset(
                     R.ASSETS_ICONS_INPUT_OTP_PNG,
@@ -123,6 +124,7 @@ class _DeleteAccountOtpPageState extends State<DeleteAccountOtpPage> {
                   ),
                 ],
               ),
+              )
             ),
           ),
         ],
