@@ -30,7 +30,7 @@ class _ManageUsersPageState extends State<ManageUsersPage> {
   // into a readable role name.
   String getRoleName(dynamic roleValue) {
     if (roleValue == null) {
-      return 'User';
+      return 'Pengguna';
     }
 
     final int role = roleValue as int;
@@ -39,7 +39,7 @@ class _ManageUsersPageState extends State<ManageUsersPage> {
       return UserRole.values[role].label;
     }
 
-    return 'Unknown';
+    return 'Tidak Diketahui';
   }
 
   @override
@@ -52,7 +52,7 @@ class _ManageUsersPageState extends State<ManageUsersPage> {
             context.go('/home');
           },
         ),
-        title: const Text('Manage Users'),
+        title: const Text('Kelola Pengguna'),
       ),
 
       body: StreamBuilder<QuerySnapshot>(
@@ -71,14 +71,14 @@ class _ManageUsersPageState extends State<ManageUsersPage> {
           // Error
           if (snapshot.hasError) {
             return const Center(
-              child: Text('Failed to load users'),
+              child: Text('Gagal memuat pengguna'),
             );
           }
 
           // No users
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
             return const Center(
-              child: Text('No users found'),
+              child: Text('Tidak ada pengguna ditemukan'),
             );
           }
 
@@ -97,7 +97,7 @@ class _ManageUsersPageState extends State<ManageUsersPage> {
                   users[index].data() as Map<String, dynamic>;
 
               final fullName =
-                  user['full_name'] ?? 'Unknown User';
+                  user['full_name'] ?? 'Pengguna Tidak Diketahui';
 
               final phoneNumber =
                   user['phone_number'] ?? '-';
@@ -159,7 +159,7 @@ class _ManageUsersPageState extends State<ManageUsersPage> {
                                 const SizedBox(height: 4),
 
                                 Text(
-                                  'Current Role: $roleName',
+                                  'Peran Saat Ini: $roleName',
                                 ),
                               ],
                             ),
@@ -179,19 +179,19 @@ class _ManageUsersPageState extends State<ManageUsersPage> {
                           initialValue: selectedRole,
 
                           decoration: const InputDecoration(
-                            labelText: 'Change Role',
+                            labelText: 'Ubah Peran',
                             border: OutlineInputBorder(),
                           ),
 
                           items: [
                             DropdownMenuItem<int>(
                               value: UserRole.user.index,
-                              child: const Text('User'),
+                              child: const Text('Pengguna'),
                             ),
 
                             DropdownMenuItem<int>(
                               value: UserRole.secretary.index,
-                              child: const Text('Secretary'),
+                              child: const Text('Sekretaris'),
                             ),
 
                             DropdownMenuItem<int>(
@@ -220,14 +220,17 @@ class _ManageUsersPageState extends State<ManageUsersPage> {
                             width: double.infinity,
                             child: ElevatedButton(
                               onPressed: () async {
-                                final bool? confirmed = await showDialog<bool>(
+                                final bool? confirmed =
+                                    await showDialog<bool>(
                                   context: context,
                                   builder: (context) {
                                     return AlertDialog(
-                                      title: const Text('Confirm Role Change'),
+                                      title: const Text(
+                                        'Konfirmasi Perubahan Peran',
+                                      ),
                                       content: Text(
-                                        'Change $fullName from '
-                                        '${getRoleName(currentRole)} to '
+                                        'Ubah peran $fullName dari '
+                                        '${getRoleName(currentRole)} menjadi '
                                         '${getRoleName(selectedRole)}?',
                                       ),
                                       actions: [
@@ -235,13 +238,13 @@ class _ManageUsersPageState extends State<ManageUsersPage> {
                                           onPressed: () {
                                             Navigator.of(context).pop(false);
                                           },
-                                          child: const Text('Cancel'),
+                                          child: const Text('Batal'),
                                         ),
                                         ElevatedButton(
                                           onPressed: () {
                                             Navigator.of(context).pop(true);
                                           },
-                                          child: const Text('Confirm'),
+                                          child: const Text('Konfirmasi'),
                                         ),
                                       ],
                                     );
@@ -271,7 +274,7 @@ class _ManageUsersPageState extends State<ManageUsersPage> {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
                                       content: Text(
-                                        '$fullName role updated successfully.',
+                                        'Peran $fullName berhasil diperbarui.',
                                       ),
                                     ),
                                   );
@@ -283,7 +286,7 @@ class _ManageUsersPageState extends State<ManageUsersPage> {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
                                       content: Text(
-                                        'Failed to update user role.',
+                                        'Gagal memperbarui peran pengguna.',
                                       ),
                                     ),
                                   );
@@ -292,7 +295,7 @@ class _ManageUsersPageState extends State<ManageUsersPage> {
                                 }
                               },
                               child: const Text(
-                                'Confirm Change',
+                                'Konfirmasi Perubahan',
                               ),
                             ),
                           ),
@@ -305,7 +308,7 @@ class _ManageUsersPageState extends State<ManageUsersPage> {
 
                       else
                         const Text(
-                          'Super Admin role cannot be changed here.',
+                          'Peran Super Admin tidak dapat diubah di sini.',
                           style: TextStyle(
                             fontStyle: FontStyle.italic,
                           ),
