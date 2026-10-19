@@ -58,16 +58,25 @@ class InformationNotifier extends ChangeNotifier {
   }
 
   Future<void> fetchData() async {
-    fetchDataState.setLoading();
-    notifyListeners();
+  fetchDataState.setLoading();
+  notifyListeners();
+  final result = await _repository.getInformations();
+  final allInformations = await _repository.getInformationsFromLocal();
+  informations.value = allInformations;
 
-    final result = await _repository.getInformations();
-    result.fold((failure) => fetchDataState.setError(failure: failure), (data) {
-      informations.value = data;
-      fetchDataState.setSuccess();
-    });
-    notifyListeners();
-  }
+  result.fold(
+    (failure) {
+      //works offline instea of error message
+      if (allInformations.isEmpty) {
+        fetchDataState.setError(failure: failure);
+      } else {
+        fetchDataState.setSuccess();
+      }
+    },
+    (_) => fetchDataState.setSuccess(),
+  );
+  notifyListeners();
+}
 
   Future<void> getDataFromLocal() async {
     fetchDataState.setLoading();
