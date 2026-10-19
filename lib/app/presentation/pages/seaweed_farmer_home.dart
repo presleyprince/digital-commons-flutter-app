@@ -42,7 +42,7 @@ class SeaweedFarmerHome extends StatelessWidget {
         title: const Text('LahanKu'),
       ),
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: kDefaultPadding),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -58,21 +58,24 @@ class SeaweedFarmerHome extends StatelessWidget {
               const SizedBox(height: 8),
               const Text('Kelola dan pantau data lahan Anda.'),
               const SizedBox(height: 24),
-              GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: tiles.length,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
-                  childAspectRatio: 0.95,
+              for (var i = 0; i < tiles.length; i += 2) ...[
+                if (i > 0) const SizedBox(height: 12),
+                IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Expanded(child: _SeaweedMenuTile(item: tiles[i])),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: i + 1 < tiles.length
+                            ? _SeaweedMenuTile(item: tiles[i + 1])
+                            : const SizedBox(),
+                      ),
+                    ],
+                  ),
                 ),
-                itemBuilder: (context, index) {
-                  final tile = tiles[index];
-                  return _SeaweedMenuTile(item: tile);
-                },
-              ),
+              ],
+              const SizedBox(height: 24),
             ],
           ),
         ),
@@ -95,7 +98,6 @@ class _SeaweedMenuItem {
 
 class _SeaweedMenuTile extends StatelessWidget {
   const _SeaweedMenuTile({required this.item});
-
   final _SeaweedMenuItem item;
 
   @override
@@ -106,7 +108,8 @@ class _SeaweedMenuTile extends StatelessWidget {
       onTap: item.onTap,
       borderRadius: BorderRadius.circular(kDefaultRadius),
       child: Container(
-        padding: const EdgeInsets.all(12),
+        constraints: const BoxConstraints(minHeight: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
         decoration: BoxDecoration(
           color: color.primary.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(kDefaultRadius),
@@ -121,12 +124,13 @@ class _SeaweedMenuTile extends StatelessWidget {
               child: Icon(item.icon, color: color.onPrimary),
             ),
             const SizedBox(height: 8),
-            Text(
-              item.label,
-              textAlign: TextAlign.center,
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
-              style: kTitle7TextStyle,
+            MediaQuery.withClampedTextScaling(
+              maxScaleFactor: 1.3,
+              child: Text(
+                item.label,
+                textAlign: TextAlign.center,
+                style: kTitle7TextStyle,
+              ),
             ),
           ],
         ),

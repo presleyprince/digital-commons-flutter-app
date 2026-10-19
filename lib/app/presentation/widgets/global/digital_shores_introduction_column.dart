@@ -82,18 +82,20 @@ class DigitalShoresIntroductionColumn extends StatelessWidget {
                       children: [
                         Icon(Icons.wb_sunny, color: Colors.white, size: 40),
                         const SizedBox(width: 12),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              tempText,
-                              style: kTitle5TextStyle.copyWith(color: Colors.white),
-                            ),
-                            Text(
-                              descText,
-                              style: kSubtitle5TextStyle.copyWith(color: Colors.white70),
-                            ),
-                          ],
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                tempText,
+                                style: kTitle5TextStyle.copyWith(color: Colors.white),
+                              ),
+                              Text(
+                                descText,
+                                style: kSubtitle5TextStyle.copyWith(color: Colors.white70),
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),

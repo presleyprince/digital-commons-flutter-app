@@ -42,13 +42,19 @@ class HomeMenuTile extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
               ),
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4,),
-              child: Text(
-                menu.title,
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: kTitle7TextStyle.copyWith(
-                  color: color.onPrimary,
+              child: MediaQuery.withClampedTextScaling(
+                maxScaleFactor: 1.3,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: menu.title.split(' ').map((word) {
+                    return FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        word,
+                        style: kTitle7TextStyle.copyWith(color: color.onPrimary),
+                      ),
+                    );
+                  }).toList(),
                 ),
               ),
             ),
