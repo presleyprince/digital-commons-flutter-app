@@ -347,37 +347,35 @@ class _GpsRecordPageState extends State<GpsRecordPage> {
                 style: TextStyle(fontSize: 15, height: 1.4),
               ),
               const SizedBox(height: 24),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: color.primary,
-                        side: BorderSide(color: color.primary),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                      ),
-                      onPressed: () => Navigator.of(context).pop(true),
-                      child: const Text('Keluar'),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: color.primary,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: FilledButton(
-                      style: FilledButton.styleFrom(
-                        backgroundColor: color.primary,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                      ),
-                      onPressed: () => Navigator.of(context).pop(false),
-                      child: const Text('Tetap di halaman'),
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: const Text('Tetap di halaman', textAlign: TextAlign.center),
+                ),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: color.primary,
+                    side: BorderSide(color: color.primary),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
                     ),
                   ),
-                ],
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: const Text('Keluar', textAlign: TextAlign.center),
+                ),
               ),
             ],
           ),

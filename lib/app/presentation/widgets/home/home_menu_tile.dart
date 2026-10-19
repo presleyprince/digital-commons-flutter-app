@@ -31,44 +31,26 @@ class HomeMenuTile extends StatelessWidget {
               fit: BoxFit.contain,
             ),
             const SizedBox(height: 8),
+            // every label box is the same size and uses the same font size
             Container(
-              constraints: const BoxConstraints(
-                minWidth: 95,
-                minHeight: 42,
-              ),
+              width: double.infinity,
+              height: 48,
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: color.primary,
                 borderRadius: BorderRadius.circular(8),
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4,),
+              padding: const EdgeInsets.symmetric(horizontal: 4),
               child: MediaQuery.withClampedTextScaling(
-                maxScaleFactor: 1.3,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: menu.title.split(' ').map((word) {
-                    return FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text(
-                        word,
-                        style: kTitle7TextStyle.copyWith(color: color.onPrimary),
-                      ),
-                    );
-                  }).toList(),
+                maxScaleFactor: 1.0,
+                child: Text(
+                  menu.title,
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  style: kTitle7TextStyle.copyWith(color: color.onPrimary),
                 ),
               ),
             ),
-            //Container(
-              //decoration: BoxDecoration(
-                //color: color.primary,
-                //borderRadius: BorderRadius.circular(8),
-              //),
-              //padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              //child: Text(
-                //menu.title,
-                //style: kTitle7TextStyle.copyWith(color: color.onPrimary),
-              //),
-            //),
           ],
         ),
       ),
