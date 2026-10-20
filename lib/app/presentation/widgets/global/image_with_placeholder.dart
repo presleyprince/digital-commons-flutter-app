@@ -32,8 +32,20 @@ class _ImageWithPlaceholderState extends State<ImageWithPlaceholder> {
     imageUrl = widget.url;
   }
 
-  @override
-  Widget build(BuildContext context) {
+ @override
+Widget build(BuildContext context) {
+  //news placeholder instead of reload
+  if (widget.url.isEmpty) {
+    return Container(
+      width: widget.width,
+      height: widget.height,
+      decoration: BoxDecoration(
+        color: Colors.grey[200],
+        borderRadius: widget.borderRadius,
+      ),
+      child: const Icon(Icons.image_outlined, color: kGreyColor),
+    );
+  }
     return Container(
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
